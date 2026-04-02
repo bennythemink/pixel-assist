@@ -136,9 +136,9 @@ Detailed steps are in `tutorial.html`. Quick summary:
 6. Update volume paths in each `docker-compose.yml` to match the Droplet's block storage
 7. Start all services:
    ```bash
-   cd caddy && docker compose up -d && cd ..
-   cd anythingllm && docker compose up -d && cd ..
-   cd middleware && docker compose up -d && cd ..
+   cd caddy && docker compose up -d --build && cd ..
+   cd anythingllm && docker compose up -d --build && cd ..
+   cd middleware && docker compose up -d --build && cd ..
    ```
 8. Configure AnythingLLM via its web UI — create a workspace, set up the embed
 9. Add the generated `<script>` tag to the client's website
