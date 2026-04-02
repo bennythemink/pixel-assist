@@ -1,0 +1,1223 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Droplet Setup Tutorial</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #0f1117;
+        --surface: #1a1d27;
+        --surface-2: #232734;
+        --border: #2e3345;
+        --text: #e1e4ed;
+        --text-muted: #8b90a0;
+        --accent: #6c8cff;
+        --accent-dim: #3a4a80;
+        --green: #4ade80;
+        --orange: #fb923c;
+        --red: #f87171;
+        --code-bg: #141620;
+        --input-bg: #1e2235;
+        --input-border: #6c8cff;
+        --radius: 8px;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.7;
+        min-height: 100vh;
+      }
+
+      /* Header */
+      .header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        z-index: 100;
+        padding: 16px 24px 0;
+      }
+
+      .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .header h1 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      .step-counter {
+        font-size: 14px;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+
+      .progress-bar-track {
+        width: 100%;
+        height: 3px;
+        background: var(--border);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .progress-bar-fill {
+        height: 100%;
+        background: var(--accent);
+        border-radius: 2px;
+        transition: width 0.3s ease;
+      }
+
+      /* Content */
+      .content {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 100px 24px 100px;
+      }
+
+      .step-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--text);
+      }
+
+      .step-where {
+        display: inline-block;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--accent);
+        background: rgba(108, 140, 255, 0.1);
+        padding: 4px 12px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+      }
+
+      .step-body p {
+        margin-bottom: 14px;
+      }
+
+      .step-body ol,
+      .step-body ul {
+        margin-bottom: 14px;
+        padding-left: 24px;
+      }
+
+      .step-body li {
+        margin-bottom: 8px;
+      }
+
+      .step-body strong {
+        color: #fff;
+      }
+
+      .step-body h3 {
+        font-size: 17px;
+        font-weight: 600;
+        margin: 28px 0 12px;
+        color: var(--text);
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      /* Code blocks */
+      .code-block {
+        position: relative;
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        margin: 14px 0 18px;
+        overflow: hidden;
+      }
+
+      .code-block-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 12px;
+        background: var(--surface-2);
+        border-bottom: 1px solid var(--border);
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .copy-btn {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        padding: 3px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.15s;
+      }
+
+      .copy-btn:hover {
+        background: var(--surface);
+        color: var(--text);
+        border-color: var(--text-muted);
+      }
+
+      .copy-btn.copied {
+        color: var(--green);
+        border-color: var(--green);
+      }
+
+      .code-block pre {
+        padding: 14px 16px;
+        overflow-x: auto;
+        font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: #c9d1d9;
+      }
+
+      /* Inline code */
+      .step-body code:not(pre code) {
+        background: var(--surface-2);
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 13px;
+        color: var(--accent);
+      }
+
+      /* Interpolated values */
+      .val {
+        color: var(--green);
+        font-weight: 600;
+      }
+
+      .val.empty {
+        color: var(--orange);
+        font-style: italic;
+      }
+
+      /* Input fields */
+      .input-group {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px 20px;
+        margin: 16px 0;
+      }
+
+      .input-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+      }
+
+      .input-group input {
+        width: 100%;
+        padding: 10px 14px;
+        background: var(--input-bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text);
+        font-size: 15px;
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+
+      .input-group input:focus {
+        border-color: var(--input-border);
+      }
+
+      .input-group input::placeholder {
+        color: var(--text-muted);
+        opacity: 0.5;
+      }
+
+      .input-group .input-hint {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 6px;
+      }
+
+      /* Tables */
+      .step-body table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 14px 0 18px;
+        font-size: 14px;
+      }
+
+      .step-body th {
+        background: var(--surface-2);
+        padding: 10px 14px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .step-body td {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 13px;
+      }
+
+      .step-body tr:last-child td {
+        border-bottom: none;
+      }
+
+      .step-body .table-wrap {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+
+      /* Warning / info boxes */
+      .callout {
+        border-radius: var(--radius);
+        padding: 14px 18px;
+        margin: 14px 0;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .callout.warning {
+        background: rgba(251, 146, 60, 0.08);
+        border: 1px solid rgba(251, 146, 60, 0.25);
+        color: var(--orange);
+      }
+
+      .callout.info {
+        background: rgba(108, 140, 255, 0.08);
+        border: 1px solid rgba(108, 140, 255, 0.25);
+        color: var(--accent);
+      }
+
+      .callout.success {
+        background: rgba(74, 222, 128, 0.08);
+        border: 1px solid rgba(74, 222, 128, 0.25);
+        color: var(--green);
+      }
+
+      /* Footer */
+      .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        padding: 14px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 100;
+      }
+
+      .nav-btn {
+        padding: 10px 28px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        border: none;
+      }
+
+      .nav-btn.prev {
+        background: var(--surface-2);
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+
+      .nav-btn.prev:hover {
+        background: var(--border);
+      }
+
+      .nav-btn.prev:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+
+      .nav-btn.next {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .nav-btn.next:hover {
+        background: #5a7ae6;
+      }
+
+      /* Step dots */
+      .step-dots {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .step-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--border);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .step-dot.active {
+        background: var(--accent);
+        width: 24px;
+        border-radius: 4px;
+      }
+
+      .step-dot.completed {
+        background: var(--green);
+      }
+
+      .step-dot:hover {
+        background: var(--text-muted);
+      }
+
+      /* Directory tree */
+      .dir-tree {
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px 20px;
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 13px;
+        line-height: 1.8;
+        color: #c9d1d9;
+        margin: 14px 0 18px;
+        white-space: pre;
+        overflow-x: auto;
+      }
+
+      .dir-tree .comment {
+        color: var(--text-muted);
+      }
+
+      /* Command explanations */
+      .cmd-explain {
+        margin-top: -10px;
+        margin-bottom: 18px;
+      }
+
+      .cmd-explain-toggle {
+        background: transparent;
+        border: none;
+        color: var(--accent);
+        font-size: 12px;
+        cursor: pointer;
+        padding: 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: opacity 0.15s;
+      }
+
+      .cmd-explain-toggle:hover {
+        opacity: 0.8;
+      }
+
+      .cmd-explain-toggle::before {
+        content: '▶';
+        font-size: 10px;
+        transition: transform 0.2s;
+      }
+
+      .cmd-explain-toggle.open::before {
+        transform: rotate(90deg);
+      }
+
+      .cmd-explain-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        background: var(--surface);
+        border-left: 3px solid var(--accent);
+        border-radius: 4px;
+      }
+
+      .cmd-explain-content.open {
+        max-height: 500px;
+        padding: 12px 16px;
+        margin-top: 8px;
+      }
+
+      .cmd-explain-content p {
+        margin: 0 0 8px 0;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .cmd-explain-content p:last-child {
+        margin-bottom: 0;
+      }
+
+      .cmd-explain-content code {
+        background: var(--code-bg);
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-top">
+        <h1 id="header-title">Droplet Setup Tutorial</h1>
+        <span class="step-counter" id="step-counter">Step 1 of 18</span>
+      </div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <div class="content" id="step-content"></div>
+
+    <div class="footer">
+      <button class="nav-btn prev" id="prev-btn" onclick="navigate(-1)">Previous</button>
+      <div class="step-dots" id="step-dots"></div>
+      <button class="nav-btn next" id="next-btn" onclick="navigate(1)">Next</button>
+    </div>
+
+    <script>
+      const TOTAL_STEPS = 19
+
+      const state = {
+        currentStep: 0,
+        reservedIP: '',
+        volumePath: '',
+        githubUsername: '',
+        domain: '',
+        clientSubdomains: '',
+        llmSubdomain: '',
+        ...JSON.parse(localStorage.getItem('droplet-tutorial') || '{}')
+      }
+
+      function saveState() {
+        localStorage.setItem('droplet-tutorial', JSON.stringify(state))
+      }
+
+      function v(key, placeholder) {
+        const val = state[key]
+        if (val && val.trim()) return `<span class="val">${esc(val.trim())}</span>`
+        return `<span class="val empty">&lt;${placeholder}&gt;</span>`
+      }
+
+      function raw(key, placeholder) {
+        const val = state[key]
+        return val && val.trim() ? val.trim() : `<${placeholder}>`
+      }
+
+      function esc(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      }
+
+      function getClients() {
+        const val = state.clientSubdomains
+        if (!val || !val.trim()) return ['client1', 'client2', 'client3']
+        return val
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+      }
+
+      function getDomain() {
+        return state.domain && state.domain.trim() ? state.domain.trim() : 'domain.com.au'
+      }
+
+      function getLlm() {
+        return state.llmSubdomain && state.llmSubdomain.trim() ? state.llmSubdomain.trim() : 'llm1'
+      }
+
+      function getIP() {
+        return state.reservedIP && state.reservedIP.trim() ? state.reservedIP.trim() : '<YOUR_RESERVED_IP>'
+      }
+
+      function getGH() {
+        return state.githubUsername && state.githubUsername.trim() ? state.githubUsername.trim() : 'your-username'
+      }
+
+      function getVolumePath() {
+        return state.volumePath && state.volumePath.trim() ? state.volumePath.trim() : '/mnt/data'
+      }
+
+      function codeBlock(code, lang, explanation) {
+        lang = lang || 'bash'
+        const id = 'cb-' + Math.random().toString(36).slice(2, 9)
+        const explainId = 'ex-' + Math.random().toString(36).slice(2, 9)
+        let html = `<div class="code-block">
+    <div class="code-block-header">
+      <span>${lang}</span>
+      <button class="copy-btn" onclick="copyCode('${id}', this)">Copy</button>
+    </div>
+    <pre id="${id}"><code>${code}</code></pre>
+  </div>`
+        if (explanation) {
+          html += `<div class="cmd-explain">
+    <button class="cmd-explain-toggle" onclick="toggleExplain('${explainId}', this)">
+      What does this command do?
+    </button>
+    <div class="cmd-explain-content" id="${explainId}">
+      ${explanation}
+    </div>
+  </div>`
+        }
+        return html
+      }
+
+      function copyCode(id, btn) {
+        const el = document.getElementById(id)
+        const text = el.textContent
+        navigator.clipboard.writeText(text).then(() => {
+          btn.textContent = 'Copied!'
+          btn.classList.add('copied')
+          setTimeout(() => {
+            btn.textContent = 'Copy'
+            btn.classList.remove('copied')
+          }, 1500)
+        })
+      }
+
+      function toggleExplain(id, btn) {
+        const content = document.getElementById(id)
+        const isOpen = content.classList.contains('open')
+        if (isOpen) {
+          content.classList.remove('open')
+          btn.classList.remove('open')
+        } else {
+          content.classList.add('open')
+          btn.classList.add('open')
+        }
+      }
+
+      function inputField(key, label, placeholder, hint) {
+        const val = state[key] || ''
+        return `<div class="input-group">
+    <label>${esc(label)}</label>
+    <input type="text" value="${esc(val)}" placeholder="${esc(placeholder)}"
+      oninput="state['${key}']=this.value; saveState();">
+    ${hint ? `<div class="input-hint">${hint}</div>` : ''}
+  </div>`
+      }
+
+      const steps = [
+        // Step 1: Prerequisites
+        () => ({
+          title: 'Prerequisites',
+          where: null,
+          body: `
+      <p>Before starting, make sure you have the following:</p>
+      <ul>
+        <li>A <strong>Digital Ocean</strong> account</li>
+        <li>A <strong>Cloudflare</strong> account (free tier is fine)</li>
+        <li>A domain registered via <strong>AWS</strong> (managed in Route53)</li>
+        <li>Client site repos on <strong>GitHub</strong> (private, SSH access)</li>
+      </ul>
+      <h3>Architecture</h3>
+      <div class="dir-tree">Route53 (NS &rarr; Cloudflare) &rarr; Cloudflare (proxy/DDOS) &rarr; DO Reserved IP &rarr; Caddy &rarr; Containers</div>
+      <h3>Directory Structure on Droplet</h3>
+      <div class="dir-tree">/srv/
+├── caddy/
+│   ├── docker-compose.yml
+│   ├── Caddyfile
+│   └── certs/
+│       ├── origin.pem
+│       └── origin-key.pem
+├── sites/
+│   ├── client1/              <span class="comment"># cloned from GitHub</span>
+│   │   └── docker-compose.yml
+│   ├── client2/
+│   └── client3/
+└── anythingllm/
+    └── instance1/
+        └── docker-compose.yml
+
+<YOUR_VOLUME_PATH>/        <span class="comment"># DO attached volume (e.g., /mnt/volume_syd1_02)</span>
+├── caddy/
+└── anythingllm/
+    └── instance1/</div>
+      <p>Config and code live in <code>/srv/</code>. Persistent/generated data lives on the DO volume at <code>&lt;YOUR_VOLUME_PATH&gt;</code>.</p>
+    `
+        }),
+
+        // Step 2: Create Droplet & Reserved IP
+        () => ({
+          title: 'Create Droplet & Reserved IP',
+          where: 'Digital Ocean Dashboard',
+          body: `
+      <ol>
+        <li>Create a Droplet using the <strong>Docker</strong> image from the DO Marketplace
+          <ul>
+            <li>Choose your preferred region and size (recommend at least <strong>4GB RAM</strong> to start, given AnythingLLM)</li>
+            <li>Under <strong>Add Volume</strong>, create a volume &mdash; DO will automatically format and mount it (typically at <code>/mnt/&lt;volume-name&gt;</code>) and add the fstab entry</li>
+          </ul>
+        </li>
+        <li>Go to <strong>Networking &rarr; Reserved IPs</strong> and create a reserved IP, assign it to your droplet</li>
+      </ol>
+      <h3>Enter Your Reserved IP</h3>
+      <p>Once you have your reserved IP, enter it below. It will be used throughout the rest of the tutorial.</p>
+      ${inputField('reservedIP', 'Reserved IP Address', '164.90.xxx.xxx', 'Your Digital Ocean reserved IP address')}
+    `
+        }),
+
+        // Step 3: SSH & Verify Volume
+        () => ({
+          title: 'SSH & Verify Volume',
+          where: 'Your Local Terminal',
+          body: `
+      <p>SSH into the droplet from your local machine:</p>
+      ${codeBlock(`ssh root@${raw('reservedIP', 'YOUR_RESERVED_IP')}`, 'bash', `<p><code>ssh</code> establishes a secure shell connection to the remote server.</p><p><code>root@...</code> specifies connecting as the root user to the IP address.</p>`)}
+      <h3>Find Your Volume Mount Path</h3>
+      <p>The volume was attached during droplet creation, so it should already be mounted. Run this to see all mounted filesystems:</p>
+      ${codeBlock('df -h', 'bash', `<p><code>df</code> reports filesystem disk space usage.</p><p><code>-h</code> shows sizes in human-readable format (GB, MB instead of bytes).</p>`)}
+      <p>Look for your volume (it will be the largest disk that's not the root filesystem). It will be mounted at a path like <code>/mnt/volume_syd1_02</code> or <code>/mnt/data-volume</code>.</p>
+      <h3>Enter Your Volume Path</h3>
+      <p>Enter the full mount path of your volume below. This will be used throughout the rest of the tutorial.</p>
+      ${inputField('volumePath', 'Volume Mount Path', '/mnt/volume_syd1_02', 'The full path where your DO volume is mounted (e.g., /mnt/volume_syd1_02)')}
+      <p>To verify it's correct, run:</p>
+      ${codeBlock(`df -h ${getVolumePath()}`, 'bash', `<p><code>df -h</code> with a specific path shows disk usage information for just that filesystem.</p><p>This confirms your volume is mounted at the path you entered.</p>`)}
+      <p>You should see your volume listed with the correct size.</p>
+    `
+        }),
+
+        // Step 4: Create Directory Structure
+        () => ({
+          title: 'Create Directory Structure',
+          where: 'Droplet (SSH)',
+          body: `
+      <p>On the droplet (as root, in any directory). These commands use absolute paths so your current directory doesn't matter:</p>
+      ${codeBlock(`# App directories
+mkdir -p /srv/caddy/certs
+mkdir -p /srv/sites
+mkdir -p /srv/anythingllm/instance1
+
+# Persistent data directories on the volume
+mkdir -p ${getVolumePath()}/caddy
+mkdir -p ${getVolumePath()}/anythingllm/instance1
+
+# AnythingLLM runs as UID 1000 inside the container
+chown -R 1000:1000 ${getVolumePath()}/anythingllm/instance1`, 'bash', `<p><code>mkdir</code> creates directories.</p><p><code>-p</code> creates parent directories as needed and doesn't error if directories already exist.</p><p><code>chown -R 1000:1000</code> sets ownership of the AnythingLLM data directory to UID 1000 (the user that AnythingLLM runs as inside the container). Without this, the container cannot write its SQLite database to the mounted volume.</p><p>Lines starting with <code>#</code> are comments for clarity.</p>`)}
+      <h3>Verify Directory Creation</h3>
+      <p>Confirm the directories were created successfully:</p>
+      ${codeBlock(`# Check /srv directories
+ls -la /srv
+
+# Check volume directories
+ls -la ${getVolumePath()}`, 'bash', `<p><code>ls -la</code> lists directory contents with details.</p><p><code>-l</code> shows long format with permissions and dates.</p><p><code>-a</code> shows all files including hidden ones (names starting with .).</p><p>You should see the directories you just created listed in the output.</p>`)}
+    `
+        }),
+
+        // Step 5: Set Up GitHub SSH Key
+        () => ({
+          title: 'Set Up GitHub SSH Key',
+          where: 'Droplet (SSH)',
+          body: `
+      <p>Generate a deploy key on the droplet so it can clone your private repos:</p>
+      ${codeBlock(`ssh-keygen -t ed25519 -C "droplet-deploy" -f ~/.ssh/id_ed25519 -N ""
+cat ~/.ssh/id_ed25519.pub`, 'bash', `<p><code>ssh-keygen</code> generates SSH key pairs for authentication.</p><p><code>-t ed25519</code> specifies the Ed25519 key type (modern, secure).</p><p><code>-C "droplet-deploy"</code> adds a comment to identify this key.</p><p><code>-f ~/.ssh/id_ed25519</code> sets the output file path.</p><p><code>-N ""</code> creates a key with no passphrase (empty string).</p><p><code>cat</code> displays the public key file contents for copying.</p>`)}
+      <p>Copy the public key output. In GitHub, go to <strong>Settings &rarr; SSH and GPG keys &rarr; New SSH key</strong> and paste it.</p>
+      <p>Test the connection:</p>
+      ${codeBlock('ssh -T git@github.com', 'bash', `<p><code>ssh -T</code> tests SSH connection without requesting a terminal.</p><p><code>git@github.com</code> connects to GitHub's SSH server to verify authentication.</p>`)}
+      <p>You should see: <em>"Hi username! You've successfully authenticated..."</em></p>
+      <h3>Enter Your GitHub Username</h3>
+      <p>This will be used in git clone commands later.</p>
+      ${inputField('githubUsername', 'GitHub Username', 'your-username', 'Your GitHub username for clone URLs')}
+    `
+        }),
+
+        // Step 6: Create Docker Network
+        () => ({
+          title: 'Create Docker Network',
+          where: 'Droplet (SSH)',
+          body: `
+      <p>Create the shared Docker network that all containers will use to communicate:</p>
+      ${codeBlock('docker network create caddy-net', 'bash', `<p><code>docker network create</code> creates a new Docker network.</p><p><code>caddy-net</code> is the name of the network. All containers will connect to this shared network to communicate with each other.</p>`)}
+      <p>All docker-compose files will reference this as an <code>external</code> network. Since it's created manually, there's no boot-order dependency between containers.</p>
+    `
+        }),
+
+        // Step 7: Add Domain to Cloudflare
+        () => ({
+          title: 'Add Domain to Cloudflare',
+          where: 'Cloudflare Dashboard',
+          body: `
+      <h3>Enter Your Domain</h3>
+      <p>Enter the domain you'll be using. This will be referenced throughout the remaining steps.</p>
+      ${inputField('domain', 'Domain', 'pixeldemos.com.au', 'Your full domain (e.g., pixeldemos.com.au)')}
+      <h3>Add the Site</h3>
+      <ol>
+        <li>Log into Cloudflare &rarr; <strong>Add a Site</strong> &rarr; enter <code>${esc(getDomain())}</code></li>
+        <li>Choose the <strong>Free</strong> plan</li>
+        <li>Cloudflare will scan existing DNS records &mdash; review and confirm</li>
+        <li>Cloudflare gives you two nameservers (e.g., <code>ada.ns.cloudflare.com</code>, <code>bob.ns.cloudflare.com</code>) &mdash; <strong>copy these</strong></li>
+      </ol>
+    `
+        }),
+
+        // Step 8: Update Nameservers in AWS
+        () => ({
+          title: 'Update Nameservers in AWS',
+          where: 'AWS Console',
+          body: `
+      <ol>
+        <li>Go to <strong>Route53 &rarr; Registered Domains &rarr; ${esc(getDomain())}</strong></li>
+        <li>Click <strong>Add or edit name servers</strong></li>
+        <li>Replace the existing nameservers with the two Cloudflare nameservers</li>
+        <li>Save &mdash; propagation can take up to 24-48 hours but is usually much faster</li>
+      </ol>
+      <div class="callout warning"><strong>IMPORTANT:</strong> You must update nameservers under <strong>Registered Domains</strong>, NOT in the Hosted Zone. These are two different sections in Route53:
+        <ul>
+          <li><strong>Registered Domains</strong> &mdash; controls which nameservers the domain points to at the registrar level. This is where you make the change.</li>
+          <li><strong>Hosted Zones</strong> &mdash; contains DNS records (A, CNAME, MX, etc.) that Route53 serves when it is the authoritative DNS. Changing the NS record inside a Hosted Zone does <strong>not</strong> change where the domain actually points &mdash; it only affects Route53's internal delegation.</li>
+        </ul>
+      </div>
+      <p>After updating, verify propagation from your local terminal:</p>
+      ${codeBlock(`dig NS ${raw('domain', 'YOUR_DOMAIN')} +short`, 'bash', `<p><code>dig NS</code> queries the nameserver records for the domain.</p><p><code>+short</code> shows just the nameserver values without extra DNS metadata.</p><p>You should see the two Cloudflare nameservers listed. If you still see the old AWS nameservers, propagation hasn't completed yet.</p>`)}
+      <div class="callout info">After propagation completes, Route53 becomes dormant for this domain. All DNS management happens in Cloudflare.</div>
+    `
+        }),
+
+        // Step 9: Configure Cloudflare SSL
+        () => ({
+          title: 'Configure Cloudflare SSL',
+          where: 'Cloudflare Dashboard',
+          body: `
+      <ol>
+        <li>Go to <strong>SSL/TLS &rarr; Overview</strong> &rarr; set mode to <strong>Full (Strict)</strong></li>
+        <li>Go to <strong>SSL/TLS &rarr; Origin Server &rarr; Create Certificate</strong>
+          <ul>
+            <li>Private key type: <strong>RSA (2048)</strong></li>
+            <li>Hostnames: <code>*.${esc(getDomain())}, ${esc(getDomain())}</code> (the wildcard covers all subdomains)</li>
+            <li>Certificate validity: <strong>15 years</strong></li>
+            <li>Click <strong>Create</strong></li>
+          </ul>
+        </li>
+        <li>You will see two text blocks:
+          <ul>
+            <li><strong>Origin Certificate</strong> &mdash; copy and save as <code>origin.pem</code> on your local machine</li>
+            <li><strong>Private Key</strong> &mdash; copy and save as <code>origin-key.pem</code> on your local machine</li>
+          </ul>
+        </li>
+      </ol>
+      <div class="callout warning"><strong>IMPORTANT:</strong> The private key is only shown once. Save it immediately.</div>
+    `
+        }),
+
+        // Step 10: Copy Origin Certificates
+        () => ({
+          title: 'Copy Origin Certificates to Droplet',
+          where: 'Your Local Terminal',
+          body: `
+      <p>From your local machine, copy the certificate files to the droplet:</p>
+      ${codeBlock(`scp origin.pem root@${raw('reservedIP', 'YOUR_RESERVED_IP')}:/srv/caddy/certs/origin.pem
+scp origin-key.pem root@${raw('reservedIP', 'YOUR_RESERVED_IP')}:/srv/caddy/certs/origin-key.pem`, 'bash', `<p><code>scp</code> securely copies files over SSH.</p><p>Format: <code>scp source destination</code></p><p><code>root@IP:/path</code> specifies remote host and destination path.</p>`)}
+      <p>Then SSH into the droplet and lock down permissions:</p>
+      ${codeBlock(`ssh root@${raw('reservedIP', 'YOUR_RESERVED_IP')}
+chmod 600 /srv/caddy/certs/origin-key.pem
+chmod 644 /srv/caddy/certs/origin.pem`, 'bash', `<p><code>chmod</code> changes file permissions.</p><p><code>600</code> = owner read/write only (private key must be secret).</p><p><code>644</code> = owner read/write, others read-only (public certificate).</p>`)}
+    `
+        }),
+
+        // Step 11: Create DNS Records
+        () => {
+          const clients = getClients()
+          const llm = getLlm()
+          const ip = getIP()
+          const domain = getDomain()
+          let rows = clients
+            .map(
+              (c) => `<tr><td>A</td><td>${esc(c)}</td><td>${esc(ip)}</td><td><span class="val">Proxied</span></td></tr>`
+            )
+            .join('\n')
+          rows += `\n<tr><td>A</td><td>${esc(llm)}</td><td>${esc(ip)}</td><td><span class="val">Proxied</span></td></tr>`
+
+          let preview = clients.map((c) => `${c}.${domain}`).join(', ') + `, ${llm}.${domain}`
+
+          return {
+            title: 'Create DNS Records in Cloudflare',
+            where: 'Cloudflare Dashboard',
+            body: `
+        <h3>Enter Your Subdomains</h3>
+        <p>Enter the subdomains you'll use for client sites and the AnythingLLM instance.</p>
+        ${inputField('clientSubdomains', 'Client Subdomains (comma-separated)', 'client1, client2, client3', 'Subdomain prefixes for each client site')}
+        ${inputField('llmSubdomain', 'AnythingLLM Subdomain', 'rag1', 'Subdomain prefix for the AnythingLLM instance')}
+        <h3>Create DNS Records</h3>
+        <p>Go to <strong>DNS &rarr; Records</strong> and create the following A records. Set all to <strong>Proxied</strong> (orange cloud). Note: the Name values are just the subdomain prefix, not the full URL.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Type</th><th>Name</th><th>Content</th><th>Proxy</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        <p>This will create: <code>${esc(preview)}</code></p>
+      `
+          }
+        },
+
+        // Step 12: Enable WebSockets
+        () => ({
+          title: 'Enable WebSockets',
+          where: 'Cloudflare Dashboard',
+          body: `
+      <p>Go to <strong>Network</strong> in the Cloudflare dashboard.</p>
+      <p>Ensure <strong>WebSockets</strong> is toggled <strong>ON</strong> (it is by default on most plans).</p>
+      <div class="callout info">WebSockets are required for the AnythingLLM chat widget to communicate in real-time.</div>
+    `
+        }),
+
+        // Step 13: Deploy Caddy
+        () => {
+          const clients = getClients()
+          const llm = getLlm()
+          const domain = getDomain()
+          const ip = getIP()
+
+          let caddyfile = `{
+    auto_https off
+}
+`
+          clients.forEach((c) => {
+            caddyfile += `
+${c}.${domain} {
+    tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin-key.pem
+    reverse_proxy ${c}:80
+}
+`
+          })
+          caddyfile += `
+${llm}.${domain} {
+    tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin-key.pem
+    reverse_proxy anythingllm1:3001
+}`
+
+          return {
+            title: 'Deploy Caddy',
+            where: 'Your Local Terminal + Droplet',
+            body: `
+        <h3>Caddyfile</h3>
+        <p>Your Caddyfile should contain the following (update <code>/srv/caddy/Caddyfile</code> on the droplet):</p>
+        ${codeBlock(esc(caddyfile), 'Caddyfile')}
+        <div class="callout warning"><strong>IMPORTANT:</strong> Before copying files, update <code>caddy/docker-compose.yml</code> and replace <code>&lt;YOUR_VOLUME_PATH&gt;</code> with <code>${getVolumePath()}</code></div>
+        <h3>Copy Config Files to the Droplet</h3>
+        <p>From your local machine:</p>
+        ${codeBlock(`scp caddy/docker-compose.yml root@${raw('reservedIP', 'YOUR_RESERVED_IP')}:/srv/caddy/docker-compose.yml
+scp caddy/Caddyfile root@${raw('reservedIP', 'YOUR_RESERVED_IP')}:/srv/caddy/Caddyfile`, 'bash', `<p><code>scp</code> copies files from your local machine to the remote droplet.</p><p>These commands copy the Caddy configuration files to their correct locations.</p>`)}
+        <h3>Start Caddy</h3>
+        <p>SSH into the droplet:</p>
+        ${codeBlock(`ssh root@${raw('reservedIP', 'YOUR_RESERVED_IP')}
+cd /srv/caddy
+docker compose up -d`, 'bash', `<p><code>cd /srv/caddy</code> changes to the directory containing docker-compose.yml.</p><p><code>docker compose up -d</code> starts containers defined in the compose file.</p><p><code>-d</code> runs in detached mode (background).</p>`)}
+        <p>Verify it's running:</p>
+        ${codeBlock(`docker ps
+docker logs caddy`, 'bash', `<p><code>docker ps</code> lists running containers.</p><p><code>docker logs</code> shows container output/logs for debugging.</p>`)}
+        <div class="callout info">Caddy will show errors about unreachable upstreams (${clients.map((c) => `<code>${esc(c)}</code>`).join(', ')}) &mdash; this is expected since those containers don't exist yet.</div>
+        <div class="callout warning"><strong>Remember:</strong> Whenever you edit the Caddyfile after initial deployment, you must reload Caddy for changes to take effect:<br>
+        <code>docker exec caddy caddy reload --config /etc/caddy/Caddyfile</code></div>
+      `
+          }
+        },
+
+        // Step 14: Clone & Start Client Sites
+        () => {
+          const clients = getClients()
+          const gh = getGH()
+
+          const cloneCmds = clients.map((c) => `git clone git@github.com:${gh}/${c}-site.git ${c}`).join('\n')
+
+          const startCmds = clients.map((c) => `cd /srv/sites/${c} && docker compose up -d`).join('\n')
+
+          const exampleCompose = `services:
+  ${clients[0] || 'client1'}:
+    image: nginx:alpine
+    container_name: ${clients[0] || 'client1'}
+    restart: unless-stopped
+    volumes:
+      - ./html:/usr/share/nginx/html:ro
+    networks:
+      - caddy-net
+
+networks:
+  caddy-net:
+    external: true`
+
+          return {
+            title: 'Clone & Start Client Sites',
+            where: 'Droplet (SSH)',
+            body: `
+        <h3>Clone Each Site</h3>
+        <p>Working directory: <code>/srv/sites/</code></p>
+        ${codeBlock(`cd /srv/sites\n\n${cloneCmds}`, 'bash', `<p><code>cd /srv/sites</code> changes to the sites directory.</p><p><code>git clone</code> copies repositories from GitHub to the droplet.</p><p><code>git@github.com:user/repo.git</code> uses SSH authentication.</p><p>The final argument is the local directory name.</p>`)}
+        <h3>Client docker-compose.yml</h3>
+        <p>Each client repo should contain a <code>docker-compose.yml</code> like this (example for ${esc(clients[0] || 'client1')}):</p>
+        ${codeBlock(esc(exampleCompose), 'yaml')}
+        <p>For each client, change the service name and <code>container_name</code> accordingly. Static site files go in an <code>html/</code> directory within the repo.</p>
+        <h3>Start Each Client</h3>
+        ${codeBlock(startCmds, 'bash', `<p><code>cd</code> changes to each client directory in turn.</p><p><code>&&</code> runs the next command only if the previous one succeeded.</p><p><code>docker compose up -d</code> starts each client container.</p>`)}
+        <p>Verify all containers are running and on the network:</p>
+        ${codeBlock(`docker ps
+docker network inspect caddy-net`, 'bash', `<p><code>docker ps</code> lists all running containers.</p><p><code>docker network inspect</code> shows detailed information about the network, including which containers are connected.</p>`)}
+      `
+          }
+        },
+
+        // Step 15: Deploy AnythingLLM
+        () => ({
+          title: 'Deploy AnythingLLM',
+          where: 'Your Local Terminal + Droplet',
+          body: `
+      <div class="callout warning"><strong>IMPORTANT:</strong> Before copying, update <code>anythingllm/instance1/docker-compose.yml</code> and replace <code>&lt;YOUR_VOLUME_PATH&gt;</code> with <code>${getVolumePath()}</code></div>
+      <div class="callout info"><strong>Why <code>cap_add: SYS_ADMIN</code>?</strong> The docker-compose file includes <code>cap_add: - SYS_ADMIN</code>. This grants the container the Linux SYS_ADMIN capability, which is required for AnythingLLM's website scraping feature. The built-in data connector uses Puppeteer (headless Chromium) to crawl web pages, and Chromium's sandbox needs this capability to run inside Docker. Without it, scraping a website via the Data Connectors UI will fail with a "No usable sandbox" error.</div>
+      <h3>Copy Config to the Droplet</h3>
+      <p>From your local machine:</p>
+      ${codeBlock(`scp anythingllm/instance1/docker-compose.yml root@${raw('reservedIP', 'YOUR_RESERVED_IP')}:/srv/anythingllm/instance1/docker-compose.yml`, 'bash', `<p><code>scp</code> copies the AnythingLLM docker-compose configuration to the droplet.</p>`)}
+      <h3>Start AnythingLLM</h3>
+      <p>SSH into the droplet:</p>
+      ${codeBlock(`cd /srv/anythingllm/instance1
+docker compose up -d`, 'bash', `<p><code>cd</code> changes to the AnythingLLM instance directory.</p><p><code>docker compose up -d</code> starts the AnythingLLM container in detached mode.</p>`)}
+      <p>Verify:</p>
+      ${codeBlock(`docker ps
+docker logs anythingllm1`, 'bash', `<p><code>docker ps</code> confirms the container is running.</p><p><code>docker logs anythingllm1</code> shows the startup logs and any errors.</p>`)}
+      <div class="callout info">The storage volume points to <code>${getVolumePath()}/anythingllm/instance1</code> on the DO attached volume, so all AnythingLLM data (database, uploads, vector cache) persists independently of the container.</div>
+      <div class="callout warning">If you see <code>unable to open database file</code> errors in the logs, the storage directory has incorrect ownership. Fix it with:<br><code>chown -R 1000:1000 ${getVolumePath()}/anythingllm/instance1</code><br>then restart: <code>docker restart anythingllm1</code></div>
+    `
+        }),
+
+        // Step 16: Add Chat Widget
+        () => {
+          const domain = getDomain()
+          const llm = getLlm()
+          const clients = getClients()
+
+          return {
+            title: 'Add Chat Widget to Client Sites',
+            where: 'Client Site Code',
+            body: `
+        <p>In each client site's HTML (e.g., <code>html/index.html</code>), add the embed script before the closing <code>&lt;/body&gt;</code> tag:</p>
+        ${codeBlock(esc('<script\n  data-embed-id="unique-embed-id-for-' + (clients[0] || 'client1') + '"\n  data-base-api-url="https://' + llm + '.' + domain + '/api/embed"\n  src="https://' + llm + '.' + domain + '/embed/anythingllm-chat-widget.min.js"\n><\/script>'), 'html')}
+        <ul>
+          <li>Each client site should have a unique <code>data-embed-id</code></li>
+          <li>All ${clients.length} clients sharing instance1 point to <code>${esc(llm)}.${esc(domain)}</code></li>
+          <li>The embed config (workspace, greeting, etc.) is set up in the AnythingLLM UI at <code>https://${esc(llm)}.${esc(domain)}</code></li>
+        </ul>
+      `
+          }
+        },
+
+        // Step 17: Verification
+        () => {
+          const domain = getDomain()
+          const clients = getClients()
+          const llm = getLlm()
+
+          const browserChecks = clients
+            .map(
+              (c, i) =>
+                `<li>Visit <code>https://${esc(c)}.${esc(domain)}</code> &mdash; should show the static site</li>`
+            )
+            .join('\n')
+
+          return {
+            title: 'Verification',
+            where: 'Droplet + Browser',
+            body: `
+        <h3>From the Droplet</h3>
+        ${codeBlock(`# Check all containers are running
+docker ps
+
+# Check all containers are on caddy-net
+docker network inspect caddy-net --format '{{range .Containers}}{{.Name}} {{end}}'
+
+# Check Caddy logs for errors
+docker logs caddy`, 'bash', `<p><code>docker ps</code> lists all running containers.</p><p><code>docker network inspect</code> with <code>--format</code> extracts just the container names from the network.</p><p><code>{{range .Containers}}{{.Name}} {{end}}</code> is a Go template that iterates through containers.</p><p><code>docker logs caddy</code> shows Caddy's output for troubleshooting.</p>`)}
+        <h3>From Your Browser</h3>
+        <ol>
+          ${browserChecks}
+          <li>Visit <code>https://${esc(llm)}.${esc(domain)}</code> &mdash; should show the AnythingLLM setup UI</li>
+          <li>On a client site, check that the chat widget appears and responds</li>
+          <li>Open browser DevTools &rarr; Network tab &rarr; check for WebSocket connection to <code>${esc(llm)}.${esc(domain)}</code></li>
+        </ol>
+        <div class="callout success">If all of the above checks pass, your setup is complete!</div>
+      `
+          }
+        },
+
+        // Step 18: Configure Firewall
+        () => ({
+          title: 'Configure Firewall',
+          where: 'Digital Ocean Dashboard',
+          body: `
+      <p>Go to <strong>Networking &rarr; Firewalls</strong> and create a firewall. Attach it to your droplet.</p>
+      <h3>Find Your Public IP Address</h3>
+      <p>For the SSH rule, you need your current public IP address. From your local terminal:</p>
+      ${codeBlock(`curl ifconfig.me`, 'bash', `<p><code>curl ifconfig.me</code> queries an external service that returns your public IP address.</p><p>The output is a single IP address like <code>203.0.113.45</code>. Use this value for the SSH firewall rule.</p>`)}
+      <div class="callout warning"><strong>Dynamic IP Warning:</strong> If you have a dynamic IP address (common with residential internet), your IP may change and lock you out of SSH access. Options:
+        <ul>
+          <li><strong>Allow SSH from anywhere</strong> — Set the SSH source to "All IPv4" and "All IPv6". SSH key authentication (which you set up in Step 5) keeps this secure.</li>
+          <li><strong>Update the firewall when your IP changes</strong> — Go to DO dashboard → Networking → Firewalls and update the SSH rule with your new IP.</li>
+          <li><strong>Use DO Console as backup</strong> — If locked out, use the <strong>Access → Launch Droplet Console</strong> option in the DO dashboard to regain access and update the firewall.</li>
+        </ul>
+      </div>
+      <h3>Find Cloudflare IP Ranges</h3>
+      <p>For ports 80 and 443, you need to allow all Cloudflare IP ranges:</p>
+      ${codeBlock(`curl https://www.cloudflare.com/ips-v4`, 'bash', `<p>This retrieves Cloudflare's IPv4 address ranges in CIDR notation.</p><p>The output is a list of IP ranges, one per line (e.g., <code>173.245.48.0/20</code>). You'll need to add each range as a separate source in the Digital Ocean firewall configuration.</p>`)}
+      <p>For IPv6 support, also fetch:</p>
+      ${codeBlock(`curl https://www.cloudflare.com/ips-v6`, 'bash', `<p>This retrieves Cloudflare's IPv6 address ranges.</p>`)}
+      <div class="callout info">You can also view the IP ranges at <code>cloudflare.com/ips/</code> in your browser.</div>
+      <h3>Configure Firewall Rules</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Direction</th><th>Protocol</th><th>Port</th><th>Sources</th></tr></thead>
+          <tbody>
+            <tr><td>Inbound</td><td>TCP</td><td>22</td><td>Your IP (SSH)</td></tr>
+            <tr><td>Inbound</td><td>TCP</td><td>80</td><td>Cloudflare IPs</td></tr>
+            <tr><td>Inbound</td><td>TCP</td><td>443</td><td>Cloudflare IPs</td></tr>
+            <tr><td>Outbound</td><td>All</td><td>All</td><td>All</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Restricting ports 80/443 to Cloudflare IPs ensures traffic can only reach your droplet through Cloudflare's proxy, preventing anyone from bypassing DDOS protection by hitting the reserved IP directly.</p>
+      <h3>Verify the Firewall</h3>
+      <p>After creating and attaching the firewall, test that it's working correctly:</p>
+      <p><strong>1. Confirm SSH still works</strong> (from your local terminal):</p>
+      ${codeBlock(`ssh root@${raw('reservedIP', 'YOUR_RESERVED_IP')}`, 'bash', `<p>If you can connect, the SSH rule is correctly allowing your IP. If the connection hangs or is refused, the firewall is blocking you — use the DO Console to fix the SSH rule.</p>`)}
+      <p><strong>2. Confirm HTTPS works through Cloudflare</strong> (from your local terminal):</p>
+      ${codeBlock(`curl -I https://${getClients()[0] || 'client1'}.${getDomain()}`, 'bash', `<p><code>curl -I</code> fetches only the HTTP headers (not the full page).</p><p>You should see <code>HTTP/2 200</code> (or <code>HTTP/1.1 200</code>) if the site is reachable through Cloudflare. This confirms Cloudflare's IPs are allowed through the firewall.</p>`)}
+      <p><strong>3. Confirm direct access is blocked</strong> (from your local terminal):</p>
+      ${codeBlock(`curl -I --connect-timeout 5 http://${raw('reservedIP', 'YOUR_RESERVED_IP')}`, 'bash', `<p>This attempts to connect directly to the droplet's IP, bypassing Cloudflare.</p><p>The connection should <strong>time out</strong> or be <strong>refused</strong>, confirming the firewall is blocking non-Cloudflare traffic on port 80. If you get a response, the firewall rules are not applied correctly.</p>`)}
+    `
+        }),
+
+        // Step 19: Updating Site Code
+        () => {
+          const clients = getClients()
+          const exampleClient = clients[0] || 'client1'
+
+          return {
+            title: 'Updating Site Code',
+            where: 'Droplet',
+            body: `
+      <p>When you push changes to a client site's GitHub repo, you need to pull the latest code on the droplet and rebuild the container.</p>
+      <h3>Pull Latest Code</h3>
+      <p>SSH into the droplet and navigate to the site directory:</p>
+      ${codeBlock(`ssh root@${raw('reservedIP', 'YOUR_RESERVED_IP')}
+cd /srv/sites/${esc(exampleClient)}
+git pull`, 'bash', `<p><code>cd /srv/sites/${esc(exampleClient)}</code> navigates to the client site directory where the repo was cloned.</p><p><code>git pull</code> fetches and merges the latest changes from GitHub.</p>`)}
+      <h3>Rebuild &amp; Restart the Container</h3>
+      <p>Since the site uses a Dockerfile build, you need to rebuild the image for changes to take effect:</p>
+      ${codeBlock(`docker compose up -d --build`, 'bash', `<p><code>docker compose up -d</code> starts the container in detached mode.</p><p><code>--build</code> forces Docker to rebuild the image from the Dockerfile, incorporating the updated site files. Without this flag, Docker would reuse the old cached image.</p>`)}
+      <h3>Verify</h3>
+      ${codeBlock(`docker ps | grep ${esc(exampleClient)}`, 'bash', `<p>Filters <code>docker ps</code> output to show only the client container. Check that the <strong>STATUS</strong> column shows it was recently restarted (e.g., "Up 5 seconds").</p>`)}
+      <div class="callout info">Caddy does <strong>not</strong> need to be restarted. It proxies to the container by name, so as long as the container name stays the same, Caddy will route to the rebuilt container automatically.</div>
+      <h3>Adding a New Site</h3>
+      <p>When adding a completely new client site (not updating an existing one), you need to do <strong>all</strong> of the following:</p>
+      <ol>
+        <li><strong>Add a DNS record in Cloudflare</strong> &mdash; Go to Cloudflare &rarr; DNS &rarr; Records &rarr; Add an <strong>A record</strong> for the new subdomain pointing to your reserved IP (<code>${raw('reservedIP', 'YOUR_RESERVED_IP')}</code>) with <strong>Proxy enabled</strong> (orange cloud)</li>
+        <li><strong>Update the Caddyfile</strong> &mdash; Add a new site block to <code>/srv/caddy/Caddyfile</code> on the droplet</li>
+        <li><strong>Reload Caddy</strong>:</li>
+      </ol>
+      ${codeBlock(`docker exec caddy caddy reload --config /etc/caddy/Caddyfile`, 'bash', `<p>This reloads Caddy's configuration without downtime. Caddy picks up the new site block and starts routing traffic for the new subdomain.</p>`)}
+      <ol start="4">
+        <li><strong>Clone and start the site container</strong>:</li>
+      </ol>
+      ${codeBlock(`cd /srv/sites
+git clone git@github.com:${raw('githubUsername', 'YOUR_GITHUB_USERNAME')}/new-site.git new-site
+cd new-site && docker compose up -d --build`, 'bash', `<p>Clones the new site repo and starts the container. Make sure the <code>container_name</code> in <code>docker-compose.yml</code> matches what you put in the Caddyfile's <code>reverse_proxy</code> directive.</p>`)}
+      <div class="callout warning"><strong>Don't forget the DNS record!</strong> If you skip the Cloudflare DNS step, the site will not be reachable. This is the most commonly missed step when adding new sites.</div>
+      <div class="callout success"><strong>Setup complete!</strong> You now know how to deploy and update client sites on this droplet.</div>
+    `
+          }
+        }
+      ]
+
+      function render() {
+        const step = steps[state.currentStep]()
+        const container = document.getElementById('step-content')
+        const counter = document.getElementById('step-counter')
+        const title = document.getElementById('header-title')
+        const fill = document.getElementById('progress-fill')
+        const prevBtn = document.getElementById('prev-btn')
+        const nextBtn = document.getElementById('next-btn')
+
+        counter.textContent = `Step ${state.currentStep + 1} of ${TOTAL_STEPS}`
+        title.textContent = step.title
+        fill.style.width = `${((state.currentStep + 1) / TOTAL_STEPS) * 100}%`
+
+        let html = `<h2 class="step-title">${step.title}</h2>`
+        if (step.where) html += `<div class="step-where">${step.where}</div>`
+        html += `<div class="step-body">${step.body}</div>`
+        container.innerHTML = html
+
+        prevBtn.disabled = state.currentStep === 0
+        nextBtn.textContent = state.currentStep === TOTAL_STEPS - 1 ? 'Done' : 'Next'
+
+        renderDots()
+        container.scrollTop = 0
+        window.scrollTo(0, 0)
+      }
+
+      function renderDots() {
+        const dotsEl = document.getElementById('step-dots')
+        let html = ''
+        for (let i = 0; i < TOTAL_STEPS; i++) {
+          let cls = 'step-dot'
+          if (i === state.currentStep) cls += ' active'
+          html += `<div class="${cls}" onclick="goToStep(${i})" title="Step ${i + 1}"></div>`
+        }
+        dotsEl.innerHTML = html
+      }
+
+      function navigate(dir) {
+        const next = state.currentStep + dir
+        if (next < 0 || next >= TOTAL_STEPS) return
+        state.currentStep = next
+        saveState()
+        render()
+      }
+
+      function goToStep(i) {
+        state.currentStep = i
+        saveState()
+        render()
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT') return
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          e.preventDefault()
+          navigate(1)
+        }
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          e.preventDefault()
+          navigate(-1)
+        }
+      })
+
+      render()
+    </script>
+  </body>
+</html>

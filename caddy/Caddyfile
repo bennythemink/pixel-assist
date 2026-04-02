@@ -1,0 +1,28 @@
+{
+    auto_https off
+}
+
+bhn.mappable.com.au {
+    tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin-key.pem
+    reverse_proxy bhn:80
+}
+
+pfg.mappable.com.au {
+    tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin-key.pem
+    reverse_proxy pfg:80
+}
+
+nvc.mappable.com.au {
+    tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin-key.pem
+    reverse_proxy nvc:80
+}
+
+sonata-acoustic-risk-tool.mappable.com.au, sonata-acoustic-risk.mappable.com.au, acoustic-risk-tool.mappable.com.au, acoustic.mappable.com.au, sonata.mappable.com.au {
+    tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin-key.pem
+    reverse_proxy sonata-acoustic-risk:80
+}
+
+rag1.mappable.com.au {
+    tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin-key.pem
+    reverse_proxy anythingllm1:3001
+}

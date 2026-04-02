@@ -1,0 +1,17 @@
+services:
+  anythingllm1:
+    image: mintplexlabs/anythingllm
+    container_name: anythingllm1
+    restart: unless-stopped
+    cap_add:
+      - SYS_ADMIN
+    volumes:
+      - /mnt/volume_syd1_04/anythingllm/instance1:/app/server/storage
+    environment:
+      - STORAGE_DIR=/app/server/storage
+    networks:
+      - caddy-net
+
+networks:
+  caddy-net:
+    external: true

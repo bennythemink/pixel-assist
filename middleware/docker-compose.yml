@@ -1,0 +1,18 @@
+services:
+  pii-proxy:
+    build: ./pii-proxy
+    container_name: pii-proxy
+    restart: unless-stopped
+    expose:
+      - '8000'
+    environment:
+      - ANYTHINGLLM_BASE_URL=http://anythingllm1:3001
+      - LOG_LEVEL=info
+      - SESSION_TTL_HOURS=24
+      - SCRUB_SCORE_THRESHOLD=0.35
+    networks:
+      - caddy-net
+
+networks:
+  caddy-net:
+    external: true
