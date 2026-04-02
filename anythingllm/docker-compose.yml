@@ -6,7 +6,7 @@ services:
     cap_add:
       - SYS_ADMIN
     volumes:
-      - /mnt/volume_syd1_04/anythingllm/:/app/server/storage
+      - /mnt/volume_syd1_04/anythingllm:/app/server/storage
     environment:
       - STORAGE_DIR=/app/server/storage
     networks:

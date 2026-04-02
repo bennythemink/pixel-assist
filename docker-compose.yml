@@ -1,0 +1,8 @@
+include:
+  - path: caddy/docker-compose.yml
+  - path: anythingllm/docker-compose.yml
+  - path: middleware/docker-compose.yml
+
+networks:
+  caddy-net:
+    driver: bridge

@@ -1,0 +1,1464 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pixel Assist — Setup Tool</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #0f1117;
+        --surface: #1a1d27;
+        --surface-2: #232734;
+        --border: #2e3345;
+        --text: #e1e4ed;
+        --text-muted: #8b90a0;
+        --accent: #6c8cff;
+        --accent-dim: #3a4a80;
+        --green: #4ade80;
+        --orange: #fb923c;
+        --red: #f87171;
+        --code-bg: #141620;
+        --input-bg: #1e2235;
+        --input-border: #6c8cff;
+        --radius: 8px;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.7;
+        min-height: 100vh;
+      }
+
+      .header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        z-index: 100;
+        padding: 16px 24px 0;
+      }
+
+      .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .header h1 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      .step-counter {
+        font-size: 14px;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+
+      .progress-bar-track {
+        width: 100%;
+        height: 3px;
+        background: var(--border);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .progress-bar-fill {
+        height: 100%;
+        background: var(--accent);
+        border-radius: 2px;
+        transition: width 0.3s ease;
+      }
+
+      .content {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 100px 24px 100px;
+      }
+
+      .step-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--text);
+      }
+
+      .step-where {
+        display: inline-block;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--accent);
+        background: rgba(108, 140, 255, 0.1);
+        padding: 4px 12px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+      }
+
+      .step-body p {
+        margin-bottom: 14px;
+      }
+      .step-body ol,
+      .step-body ul {
+        margin-bottom: 14px;
+        padding-left: 24px;
+      }
+      .step-body li {
+        margin-bottom: 8px;
+      }
+      .step-body strong {
+        color: #fff;
+      }
+
+      .step-body h3 {
+        font-size: 17px;
+        font-weight: 600;
+        margin: 28px 0 12px;
+        color: var(--text);
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      /* Code blocks */
+      .code-block {
+        position: relative;
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        margin: 14px 0 18px;
+        overflow: hidden;
+      }
+
+      .code-block-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 12px;
+        background: var(--surface-2);
+        border-bottom: 1px solid var(--border);
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .copy-btn {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        padding: 3px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.15s;
+      }
+
+      .copy-btn:hover {
+        background: var(--surface);
+        color: var(--text);
+        border-color: var(--text-muted);
+      }
+
+      .copy-btn.copied {
+        color: var(--green);
+        border-color: var(--green);
+      }
+
+      .code-block pre {
+        padding: 14px 16px;
+        overflow-x: auto;
+        font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: #c9d1d9;
+      }
+
+      .step-body code:not(pre code) {
+        background: var(--surface-2);
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 13px;
+        color: var(--accent);
+      }
+
+      .val {
+        color: var(--green);
+        font-weight: 600;
+      }
+      .val.empty {
+        color: var(--orange);
+        font-style: italic;
+      }
+
+      /* Input fields */
+      .input-group {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px 20px;
+        margin: 16px 0;
+      }
+
+      .input-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+      }
+
+      .input-group input {
+        width: 100%;
+        padding: 10px 14px;
+        background: var(--input-bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text);
+        font-size: 15px;
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+
+      .input-group input:focus {
+        border-color: var(--input-border);
+      }
+      .input-group input::placeholder {
+        color: var(--text-muted);
+        opacity: 0.5;
+      }
+      .input-group .input-hint {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 6px;
+      }
+
+      /* Tables */
+      .step-body table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 14px 0 18px;
+        font-size: 14px;
+      }
+      .step-body th {
+        background: var(--surface-2);
+        padding: 10px 14px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        border-bottom: 1px solid var(--border);
+      }
+      .step-body td {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 13px;
+      }
+      .step-body tr:last-child td {
+        border-bottom: none;
+      }
+      .step-body .table-wrap {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+
+      /* Callouts */
+      .callout {
+        border-radius: var(--radius);
+        padding: 14px 18px;
+        margin: 14px 0;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .callout.warning {
+        background: rgba(251, 146, 60, 0.08);
+        border: 1px solid rgba(251, 146, 60, 0.25);
+        color: var(--orange);
+      }
+      .callout.info {
+        background: rgba(108, 140, 255, 0.08);
+        border: 1px solid rgba(108, 140, 255, 0.25);
+        color: var(--accent);
+      }
+      .callout.success {
+        background: rgba(74, 222, 128, 0.08);
+        border: 1px solid rgba(74, 222, 128, 0.25);
+        color: var(--green);
+      }
+
+      /* Footer */
+      .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        padding: 14px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 100;
+      }
+
+      .nav-btn {
+        padding: 10px 28px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        border: none;
+      }
+
+      .nav-btn.prev {
+        background: var(--surface-2);
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+      .nav-btn.prev:hover {
+        background: var(--border);
+      }
+      .nav-btn.prev:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+      .nav-btn.next {
+        background: var(--accent);
+        color: #fff;
+      }
+      .nav-btn.next:hover {
+        background: #5a7ae6;
+      }
+
+      .step-dots {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .step-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--border);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .step-dot.active {
+        background: var(--accent);
+        width: 24px;
+        border-radius: 4px;
+      }
+      .step-dot.completed {
+        background: var(--green);
+      }
+      .step-dot:hover {
+        background: var(--text-muted);
+      }
+
+      .dir-tree {
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px 20px;
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 13px;
+        line-height: 1.8;
+        color: #c9d1d9;
+        margin: 14px 0 18px;
+        white-space: pre;
+        overflow-x: auto;
+      }
+
+      .dir-tree .comment {
+        color: var(--text-muted);
+      }
+
+      /* Command explanations */
+      .cmd-explain {
+        margin-top: -10px;
+        margin-bottom: 18px;
+      }
+      .cmd-explain-toggle {
+        background: transparent;
+        border: none;
+        color: var(--accent);
+        font-size: 12px;
+        cursor: pointer;
+        padding: 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: opacity 0.15s;
+      }
+      .cmd-explain-toggle:hover {
+        opacity: 0.8;
+      }
+      .cmd-explain-toggle::before {
+        content: '▶';
+        font-size: 10px;
+        transition: transform 0.2s;
+      }
+      .cmd-explain-toggle.open::before {
+        transform: rotate(90deg);
+      }
+      .cmd-explain-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        background: var(--surface);
+        border-left: 3px solid var(--accent);
+        border-radius: 4px;
+      }
+      .cmd-explain-content.open {
+        max-height: 500px;
+        padding: 12px 16px;
+        margin-top: 8px;
+      }
+      .cmd-explain-content p {
+        margin: 0 0 8px 0;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .cmd-explain-content p:last-child {
+        margin-bottom: 0;
+      }
+      .cmd-explain-content code {
+        background: var(--code-bg);
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 12px;
+      }
+
+      /* Generate button */
+      .generate-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 32px;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.15s;
+        background: var(--green);
+        color: #000;
+        margin: 10px 0;
+      }
+
+      .generate-btn:hover {
+        filter: brightness(1.1);
+      }
+      .generate-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        filter: none;
+      }
+
+      .file-result {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 14px;
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 13px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .file-result:last-child {
+        border-bottom: none;
+      }
+      .file-result .icon {
+        font-size: 16px;
+      }
+      .file-result.ok .icon {
+        color: var(--green);
+      }
+      .file-result.fail .icon {
+        color: var(--red);
+      }
+      .file-result .path {
+        flex: 1;
+      }
+
+      .results-box {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        margin: 16px 0;
+        overflow: hidden;
+      }
+
+      .results-box-header {
+        padding: 10px 14px;
+        background: var(--surface-2);
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+      }
+
+      /* Skip link for optional steps */
+      .skip-link {
+        display: inline-block;
+        color: var(--text-muted);
+        font-size: 13px;
+        cursor: pointer;
+        margin-top: 12px;
+        text-decoration: underline;
+        transition: color 0.15s;
+      }
+
+      .skip-link:hover {
+        color: var(--text);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-top">
+        <h1 id="header-title">Pixel Assist Setup</h1>
+        <span class="step-counter" id="step-counter">Step 1 of 19</span>
+      </div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <div class="content" id="step-content"></div>
+
+    <div class="footer">
+      <button class="nav-btn prev" id="prev-btn" onclick="navigate(-1)">Previous</button>
+      <div class="step-dots" id="step-dots"></div>
+      <button class="nav-btn next" id="next-btn" onclick="navigate(1)">Next</button>
+    </div>
+
+    <script>
+      const TOTAL_STEPS = 19
+
+      const state = {
+        currentStep: 0,
+        subdomain: '',
+        domain: 'pixel-assist.com.au',
+        volumePath: '',
+        reservedIP: '',
+        githubUsername: 'bennythemink',
+        filesGenerated: false,
+        ...JSON.parse(localStorage.getItem('pixel-assist-setup') || '{}')
+      }
+
+      function saveState() {
+        localStorage.setItem('pixel-assist-setup', JSON.stringify(state))
+      }
+
+      function esc(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+      }
+
+      function v(key, placeholder) {
+        const val = state[key]
+        if (val && val.trim())
+          return `<span class="val" data-val-key="${key}" data-val-placeholder="${esc(placeholder)}">${esc(val.trim())}</span>`
+        return `<span class="val empty" data-val-key="${key}" data-val-placeholder="${esc(placeholder)}">&lt;${placeholder}&gt;</span>`
+      }
+
+      function raw(key, placeholder) {
+        const val = state[key]
+        return val && val.trim() ? val.trim() : `<${placeholder}>`
+      }
+
+      function getSubdomain() {
+        return state.subdomain && state.subdomain.trim() ? state.subdomain.trim() : 'client-name'
+      }
+      function getDomain() {
+        return state.domain && state.domain.trim() ? state.domain.trim() : 'pixel-assist.com.au'
+      }
+      function getIP() {
+        return state.reservedIP && state.reservedIP.trim() ? state.reservedIP.trim() : '<YOUR_RESERVED_IP>'
+      }
+      function getGH() {
+        return state.githubUsername && state.githubUsername.trim() ? state.githubUsername.trim() : 'your-username'
+      }
+      function getVolumePath() {
+        return state.volumePath && state.volumePath.trim() ? state.volumePath.trim() : '/mnt/volume_syd1_XX'
+      }
+      function getFQDN() {
+        return `${getSubdomain()}.${getDomain()}`
+      }
+
+      function codeBlock(code, lang, explanation) {
+        lang = lang || 'bash'
+        const id = 'cb-' + Math.random().toString(36).slice(2, 9)
+        const explainId = 'ex-' + Math.random().toString(36).slice(2, 9)
+        let html = `<div class="code-block">
+    <div class="code-block-header">
+      <span>${lang}</span>
+      <button class="copy-btn" onclick="copyCode('${id}', this)">Copy</button>
+    </div>
+    <pre id="${id}"><code>${code}</code></pre>
+  </div>`
+        if (explanation) {
+          html += `<div class="cmd-explain">
+    <button class="cmd-explain-toggle" onclick="toggleExplain('${explainId}', this)">What does this command do?</button>
+    <div class="cmd-explain-content" id="${explainId}">${explanation}</div>
+  </div>`
+        }
+        return html
+      }
+
+      function copyCode(id, btn) {
+        const el = document.getElementById(id)
+        navigator.clipboard.writeText(el.textContent).then(() => {
+          btn.textContent = 'Copied!'
+          btn.classList.add('copied')
+          setTimeout(() => {
+            btn.textContent = 'Copy'
+            btn.classList.remove('copied')
+          }, 1500)
+        })
+      }
+
+      function toggleExplain(id, btn) {
+        const content = document.getElementById(id)
+        content.classList.toggle('open')
+        btn.classList.toggle('open')
+      }
+
+      function inputField(key, label, placeholder, hint) {
+        const val = state[key] || ''
+        return `<div class="input-group">
+    <label>${esc(label)}</label>
+    <input type="text" value="${esc(val)}" placeholder="${esc(placeholder)}" data-key="${key}"
+      oninput="updateField('${key}', this.value)">
+    ${hint ? `<div class="input-hint">${hint}</div>` : ''}
+  </div>`
+      }
+
+      function updateField(key, value) {
+        state[key] = value
+        saveState()
+        // Update all interpolated value spans without re-rendering
+        document.querySelectorAll('[data-val-key]').forEach((el) => {
+          const k = el.dataset.valKey
+          const placeholder = el.dataset.valPlaceholder
+          const val = state[k]
+          if (val && val.trim()) {
+            el.textContent = val.trim()
+            el.classList.remove('empty')
+          } else {
+            el.textContent = `<${placeholder}>`
+            el.classList.add('empty')
+          }
+        })
+        // Update code block previews that depend on state
+        document.querySelectorAll('[data-live-preview]').forEach((el) => {
+          const gen = el.dataset.livePreview
+          if (typeof window[gen] === 'function') {
+            el.textContent = window[gen]()
+          }
+        })
+      }
+
+      // --- File generation (mirrors setup.js templates) ---
+
+      function genCaddyfile() {
+        return `{
+    auto_https off
+}
+
+${getSubdomain()}.${getDomain()} {
+    tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin-key.pem
+
+    header Access-Control-Allow-Origin "*"
+    header Access-Control-Allow-Methods "POST, OPTIONS"
+    header Access-Control-Allow-Headers "*"
+
+    @options method OPTIONS
+    respond @options 204
+
+    handle /api/embed/*/stream-chat {
+        reverse_proxy pii-proxy:8000 {
+            flush_interval -1
+        }
+    }
+
+    handle {
+        reverse_proxy anythingllm:3001
+    }
+}
+`
+      }
+
+      function genCaddyCompose() {
+        return `services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./certs:/etc/caddy/certs:ro
+      - ${getVolumePath()}/caddy:/data
+    networks:
+      - caddy-net
+
+networks:
+  caddy-net:
+    external: true
+`
+      }
+
+      function genAnythingllmCompose() {
+        return `services:
+  anythingllm:
+    image: mintplexlabs/anythingllm
+    container_name: anythingllm
+    restart: unless-stopped
+    cap_add:
+      - SYS_ADMIN
+    volumes:
+      - ${getVolumePath()}/anythingllm:/app/server/storage
+    environment:
+      - STORAGE_DIR=/app/server/storage
+    networks:
+      - caddy-net
+
+networks:
+  caddy-net:
+    external: true
+`
+      }
+
+      function genMiddlewareCompose() {
+        return `services:
+  pii-proxy:
+    build: ./pii-proxy
+    container_name: pii-proxy
+    restart: unless-stopped
+    expose:
+      - '8000'
+    environment:
+      - ANYTHINGLLM_BASE_URL=http://anythingllm:3001
+      - LOG_LEVEL=info
+      - SESSION_TTL_HOURS=24
+      - SCRUB_SCORE_THRESHOLD=0.35
+    networks:
+      - caddy-net
+
+networks:
+  caddy-net:
+    external: true
+`
+      }
+
+      function genRootCompose() {
+        return `include:
+  - path: caddy/docker-compose.yml
+  - path: anythingllm/docker-compose.yml
+  - path: middleware/docker-compose.yml
+
+networks:
+  caddy-net:
+    driver: bridge
+`
+      }
+
+      async function generateFiles() {
+        const btn = document.getElementById('generate-btn')
+        btn.disabled = true
+        btn.textContent = 'Writing files…'
+
+        try {
+          const resp = await fetch('/api/write-files', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              subdomain: getSubdomain(),
+              domain: getDomain(),
+              volumePath: getVolumePath()
+            })
+          })
+
+          const data = await resp.json()
+
+          if (data.error) {
+            btn.textContent = 'Error — see below'
+            showResults({ error: data.error })
+            return
+          }
+
+          state.filesGenerated = true
+          saveState()
+          showResults(data.results)
+          btn.textContent = 'Files written ✓'
+        } catch (err) {
+          btn.textContent = 'Connection error'
+          showResults({ error: 'Could not connect to setup server. Is node setup.js running?' })
+        }
+      }
+
+      function showResults(results) {
+        const el = document.getElementById('generate-results')
+        if (!el) return
+
+        if (results.error) {
+          el.innerHTML = `<div class="callout warning"><strong>Error:</strong> ${esc(results.error)}</div>`
+          return
+        }
+
+        let html = '<div class="results-box"><div class="results-box-header">Results</div>'
+        for (const [path, result] of Object.entries(results)) {
+          const cls = result.ok ? 'ok' : 'fail'
+          const icon = result.ok ? '✓' : '✗'
+          const extra = result.error ? ` — ${esc(result.error)}` : ''
+          html += `<div class="file-result ${cls}"><span class="icon">${icon}</span><span class="path">${esc(path)}${extra}</span></div>`
+        }
+        html += '</div>'
+        el.innerHTML = html
+      }
+
+      // ──────────────────── STEPS ────────────────────
+
+      const steps = [
+        // Step 1: Prerequisites & Architecture
+        () => ({
+          title: 'Prerequisites & Architecture',
+          where: null,
+          body: `
+      <p>Before starting, make sure you have:</p>
+      <ul>
+        <li>A <strong>DigitalOcean</strong> account</li>
+        <li>A <strong>Cloudflare</strong> account (free tier is fine)</li>
+        <li>A domain managed via <strong>AWS Route53</strong> (as registrar)</li>
+        <li>A <strong>GitHub</strong> account (to clone this repo on the server)</li>
+        <li><strong>Node.js</strong> installed locally (to run this setup tool)</li>
+      </ul>
+      <h3>Architecture</h3>
+      <p>Each Pixel Assist instance runs on a single Droplet. Client websites are hosted externally — they embed a chat widget <code>&lt;script&gt;</code> tag pointing to this Droplet.</p>
+      <div class="dir-tree">Client website (external)
+        │
+        ▼
+  Cloudflare (DNS + edge proxy)
+        │
+        ▼
+  Caddy (TLS + routing + CORS)
+        │
+        ├── /api/embed/*/stream-chat → PII Proxy (scrub PII) → AnythingLLM
+        │
+        └── everything else → AnythingLLM (direct)</div>
+      <h3>Repo Structure</h3>
+      <div class="dir-tree">pixel-assist/
+├── docker-compose.yml        <span class="comment"># Root orchestrator (includes sub-files)</span>
+├── setup.js                  <span class="comment"># This setup tool</span>
+├── setup.html
+├── caddy/
+│   ├── docker-compose.yml
+│   ├── Caddyfile             <span class="comment"># Generated by this tool</span>
+│   └── certs/                <span class="comment"># Cloudflare origin certs (not in repo)</span>
+├── middleware/
+│   ├── docker-compose.yml
+│   └── pii-proxy/            <span class="comment"># FastAPI + Presidio source code</span>
+└── anythingllm/
+    └── docker-compose.yml</div>
+      <h3>Workflow</h3>
+      <ol>
+        <li>Create a client branch off <code>main</code> (e.g. <code>client-acme</code>)</li>
+        <li>Run <code>node setup.js</code> — this tool opens in your browser</li>
+        <li>Fill in client details → click <strong>Generate</strong> → config files are written to disk</li>
+        <li>Commit and push the branch</li>
+        <li>On the Droplet: <code>git clone</code> + checkout the branch</li>
+        <li>One-time server prep (volume dirs, SSL certs)</li>
+        <li><code>docker compose up -d --build</code> from the project root</li>
+      </ol>
+    `
+        }),
+
+        // Step 2: Instance Configuration
+        () => ({
+          title: 'Instance Configuration',
+          where: 'This Tool',
+          body: `
+      <p>Enter the details for this client instance. These values will be used to generate config files and will appear throughout the remaining steps.</p>
+      ${inputField('subdomain', 'Client Subdomain', 'acme-corp', 'The subdomain prefix for this client (e.g. acme-corp → acme-corp.pixel-assist.com.au)')}
+      ${inputField('domain', 'Domain', 'pixel-assist.com.au', 'Your base domain')}
+      ${inputField('reservedIP', 'Reserved IP Address', '164.90.xxx.xxx', "Your DigitalOcean reserved IP (enter after creating the Droplet if you don't have it yet)")}
+      ${inputField('volumePath', 'Volume Mount Path', '/mnt/volume_syd1_04', "The DO block storage mount path (enter after creating the Droplet if you don't have it yet)")}
+      ${inputField('githubUsername', 'GitHub Username', 'pixel-agency', 'Your GitHub username or org for clone URLs')}
+      <h3>Preview</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Setting</th><th>Value</th></tr></thead>
+          <tbody>
+            <tr><td>Full chat URL</td><td>${v('subdomain', 'subdomain')}.${v('domain', 'domain')}</td></tr>
+            <tr><td>Caddy volume</td><td>${v('volumePath', 'volume-path')}/caddy</td></tr>
+            <tr><td>AnythingLLM volume</td><td>${v('volumePath', 'volume-path')}/anythingllm</td></tr>
+            <tr><td>Clone URL</td><td>git@github.com:${v('githubUsername', 'username')}/pixel-assist.git</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout info">All values are saved automatically and persist across page reloads. You can come back and update them at any time.</div>
+    `
+        }),
+
+        // Step 3: Generate Config Files
+        () => {
+          const missing = []
+          if (!state.subdomain || !state.subdomain.trim()) missing.push('subdomain')
+          if (!state.domain || !state.domain.trim()) missing.push('domain')
+          if (!state.volumePath || !state.volumePath.trim()) missing.push('volume path')
+          const canGenerate = missing.length === 0
+
+          return {
+            title: 'Generate Config Files',
+            where: 'This Tool',
+            body: `
+      <p>This step generates the config files for your instance and writes them directly to the project directory.</p>
+      ${!canGenerate ? `<div class="callout warning"><strong>Missing required fields:</strong> ${missing.join(', ')}. Go back to Step 2 to fill them in.</div>` : ''}
+      <h3>Files to Generate</h3>
+      <p>The following files will be ${state.filesGenerated ? 'overwritten' : 'created'}:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td>docker-compose.yml</td><td>Root orchestrator (includes sub-files, creates network)</td></tr>
+            <tr><td>caddy/Caddyfile</td><td>Reverse proxy config with CORS + PII proxy routing</td></tr>
+            <tr><td>caddy/docker-compose.yml</td><td>Caddy container with volume path</td></tr>
+            <tr><td>anythingllm/docker-compose.yml</td><td>AnythingLLM container with volume path</td></tr>
+            <tr><td>middleware/docker-compose.yml</td><td>PII proxy container</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>Preview: Caddyfile</h3>
+      ${codeBlock(esc(genCaddyfile()), 'Caddyfile')}
+      <h3>Preview: caddy/docker-compose.yml</h3>
+      ${codeBlock(esc(genCaddyCompose()), 'yaml')}
+      <h3>Preview: anythingllm/docker-compose.yml</h3>
+      ${codeBlock(esc(genAnythingllmCompose()), 'yaml')}
+      <h3>Preview: middleware/docker-compose.yml</h3>
+      ${codeBlock(esc(genMiddlewareCompose()), 'yaml')}
+      <h3>Preview: docker-compose.yml (root)</h3>
+      ${codeBlock(esc(genRootCompose()), 'yaml')}
+      <h3>Write Files</h3>
+      <button class="generate-btn" id="generate-btn" onclick="generateFiles()" ${canGenerate ? '' : 'disabled'}>
+        ${state.filesGenerated ? 'Re-generate & Overwrite Files' : 'Generate & Write Files'}
+      </button>
+      <div id="generate-results"></div>
+      ${state.filesGenerated ? '<div class="callout success"><strong>Files have been generated.</strong> Commit your changes and push the branch, then continue with the server setup steps.</div>' : ''}
+    `
+          }
+        },
+
+        // Step 4: Create Droplet & Reserved IP
+        () => ({
+          title: 'Create Droplet & Reserved IP',
+          where: 'DigitalOcean Dashboard',
+          body: `
+      <ol>
+        <li>Create a Droplet using the <strong>Docker</strong> image from the DO Marketplace
+          <ul>
+            <li>Choose your preferred region and size (recommend at least <strong>4 GB RAM</strong>)</li>
+            <li>Under <strong>Add Volume</strong>, create a block storage volume — DO will format and mount it automatically (typically at <code>/mnt/&lt;volume-name&gt;</code>)</li>
+          </ul>
+        </li>
+        <li>Go to <strong>Networking → Reserved IPs</strong> and create a reserved IP, assign it to your Droplet</li>
+      </ol>
+      <p>If you haven't already, enter your reserved IP and volume path in Step 2.</p>
+      <div class="callout info">After creating the Droplet, you can go back to Step 2 to enter the reserved IP and volume path, then re-generate the config files in Step 3.</div>
+    `
+        }),
+
+        // Step 5: SSH & Verify Volume
+        () => ({
+          title: 'SSH & Verify Volume',
+          where: 'Your Local Terminal',
+          body: `
+      <p>SSH into the Droplet:</p>
+      ${codeBlock(`ssh root@${raw('reservedIP', 'YOUR_RESERVED_IP')}`, 'bash', `<p><code>ssh</code> establishes a secure shell connection to the remote server as root.</p>`)}
+      <h3>Find Your Volume Mount Path</h3>
+      <p>The volume was attached during Droplet creation. Run this to see mounted filesystems:</p>
+      ${codeBlock('df -h', 'bash', `<p><code>df -h</code> shows disk space usage in human-readable format. Look for your volume — it will be the largest non-root filesystem, mounted at a path like <code>/mnt/volume_syd1_04</code>.</p>`)}
+      <p>If the volume path differs from what you entered in Step 2, go back and update it, then re-generate the files in Step 3.</p>
+      <h3>Verify Docker & Compose Version</h3>
+      ${codeBlock('docker compose version', 'bash', `<p>The root docker-compose.yml uses the <code>include</code> directive, which requires Docker Compose v2.20 or later. The DO Docker marketplace image should have a recent version.</p>`)}
+      <div class="callout warning"><strong>Required:</strong> Docker Compose v2.20+ (for the <code>include</code> directive). If your version is older, update with: <code>apt update && apt install -y docker-compose-plugin</code></div>
+    `
+        }),
+
+        // Step 6: Create Directory Structure
+        () => ({
+          title: 'Create Directory Structure',
+          where: 'Droplet (SSH)',
+          body: `
+      <p>Create the persistent data directories on the block storage volume. The project code itself will be cloned from GitHub later.</p>
+      ${codeBlock(
+        `# Persistent data directories on the volume
+mkdir -p ${getVolumePath()}/caddy
+mkdir -p ${getVolumePath()}/anythingllm
+
+# AnythingLLM runs as UID 1000 inside the container
+chown -R 1000:1000 ${getVolumePath()}/anythingllm`,
+        'bash',
+        `<p><code>mkdir -p</code> creates directories (and parents) without erroring if they exist.</p><p><code>chown -R 1000:1000</code> sets ownership to UID 1000 — the user AnythingLLM runs as inside the container. Without this, it cannot write its SQLite database to the mounted volume.</p>`
+      )}
+      <h3>Verify</h3>
+      ${codeBlock(`ls -la ${getVolumePath()}`, 'bash', `<p>Confirm the directories were created and ownership is correct.</p>`)}
+    `
+        }),
+
+        // Step 7: Set Up GitHub SSH Key
+        () => ({
+          title: 'Set Up GitHub SSH Key',
+          where: 'Droplet (SSH)',
+          body: `
+      <p>Generate a deploy key so the Droplet can clone the Pixel Assist repo:</p>
+      ${codeBlock(
+        `ssh-keygen -t ed25519 -C "droplet-deploy" -f ~/.ssh/id_ed25519 -N ""
+cat ~/.ssh/id_ed25519.pub`,
+        'bash',
+        `<p><code>ssh-keygen</code> generates an Ed25519 SSH key pair with no passphrase.</p><p><code>cat</code> displays the public key for copying.</p>`
+      )}
+      <p>Copy the public key output. In GitHub, go to <strong>Settings → SSH and GPG keys → New SSH key</strong> and paste it.</p>
+      <p>Test the connection:</p>
+      ${codeBlock('ssh -T git@github.com', 'bash', `<p>Tests SSH authentication with GitHub. You should see: <em>"Hi username! You've successfully authenticated…"</em></p>`)}
+    `
+        }),
+
+        // Step 8: Add Domain to Cloudflare
+        () => ({
+          title: 'Add Domain to Cloudflare',
+          where: 'Cloudflare Dashboard',
+          body: `
+      <ol>
+        <li>Log into Cloudflare → <strong>Add a Site</strong> → enter <code>${esc(getDomain())}</code></li>
+        <li>Choose the <strong>Free</strong> plan</li>
+        <li>Cloudflare will scan existing DNS records — review and confirm</li>
+        <li>Cloudflare gives you two nameservers (e.g. <code>ada.ns.cloudflare.com</code>, <code>bob.ns.cloudflare.com</code>) — <strong>copy these</strong></li>
+      </ol>
+    `
+        }),
+
+        // Step 9: Update Nameservers in AWS
+        () => ({
+          title: 'Update Nameservers in AWS',
+          where: 'AWS Console',
+          body: `
+      <ol>
+        <li>Go to <strong>Route53 → Registered Domains → ${esc(getDomain())}</strong></li>
+        <li>Click <strong>Add or edit name servers</strong></li>
+        <li>Replace the existing nameservers with the two Cloudflare nameservers</li>
+        <li>Save — propagation can take up to 24–48 hours but is usually much faster</li>
+      </ol>
+      <div class="callout warning"><strong>IMPORTANT:</strong> Update nameservers under <strong>Registered Domains</strong>, NOT in the Hosted Zone. These are different sections in Route53:
+        <ul>
+          <li><strong>Registered Domains</strong> — controls which nameservers the domain points to at the registrar level</li>
+          <li><strong>Hosted Zones</strong> — contains DNS records served by Route53. Changing NS here does NOT change where the domain actually points</li>
+        </ul>
+      </div>
+      <p>Verify propagation from your local terminal:</p>
+      ${codeBlock(`dig NS ${raw('domain', 'YOUR_DOMAIN')} +short`, 'bash', `<p><code>dig NS</code> queries nameserver records. You should see the Cloudflare nameservers listed.</p>`)}
+      <div class="callout info">After propagation, Route53 becomes dormant for this domain. All DNS management happens in Cloudflare.</div>
+    `
+        }),
+
+        // Step 10: Configure Cloudflare SSL
+        () => ({
+          title: 'Configure Cloudflare SSL',
+          where: 'Cloudflare Dashboard',
+          body: `
+      <ol>
+        <li>Go to <strong>SSL/TLS → Overview</strong> → set mode to <strong>Full</strong>
+          <div class="callout warning"><strong>Use "Full", NOT "Full (Strict)".</strong> Cloudflare origin certificates are not issued by a public CA, so "Full (Strict)" will reject the connection. "Full" encrypts traffic between Cloudflare and your server using the origin certificate without requiring a publicly trusted CA.</div>
+        </li>
+        <li>Go to <strong>SSL/TLS → Origin Server → Create Certificate</strong>
+          <ul>
+            <li>Private key type: <strong>RSA (2048)</strong></li>
+            <li>Hostnames: <code>*.${esc(getDomain())}, ${esc(getDomain())}</code> (wildcard covers all subdomains)</li>
+            <li>Certificate validity: <strong>15 years</strong></li>
+            <li>Click <strong>Create</strong></li>
+          </ul>
+        </li>
+        <li>You will see two text blocks:
+          <ul>
+            <li><strong>Origin Certificate</strong> — save as <code>origin.pem</code></li>
+            <li><strong>Private Key</strong> — save as <code>origin-key.pem</code></li>
+          </ul>
+        </li>
+      </ol>
+      <div class="callout warning"><strong>IMPORTANT:</strong> The private key is only shown once. Save it immediately.</div>
+    `
+        }),
+
+        // Step 11: Copy Origin Certificates
+        () => ({
+          title: 'Copy Origin Certificates to Droplet',
+          where: 'Your Local Terminal',
+          body: `
+      <p>From your local machine, copy the certificate files to the Droplet:</p>
+      ${codeBlock(
+        `scp origin.pem root@${raw('reservedIP', 'YOUR_RESERVED_IP')}:/srv/pixel-assist/caddy/certs/origin.pem
+scp origin-key.pem root@${raw('reservedIP', 'YOUR_RESERVED_IP')}:/srv/pixel-assist/caddy/certs/origin-key.pem`,
+        'bash',
+        `<p><code>scp</code> securely copies files over SSH.</p>`
+      )}
+      <div class="callout info">The <code>caddy/certs/</code> directory is git-ignored. Certificates must be copied manually to each Droplet.</div>
+      <p>SSH into the Droplet and lock down permissions:</p>
+      ${codeBlock(
+        `ssh root@${raw('reservedIP', 'YOUR_RESERVED_IP')}
+chmod 600 /srv/pixel-assist/caddy/certs/origin-key.pem
+chmod 644 /srv/pixel-assist/caddy/certs/origin.pem`,
+        'bash',
+        `<p><code>chmod 600</code> = owner read/write only (private key must be secret).</p><p><code>chmod 644</code> = owner read/write, others read-only.</p>`
+      )}
+    `
+        }),
+
+        // Step 12: Create DNS Record
+        () => ({
+          title: 'Create DNS Record',
+          where: 'Cloudflare Dashboard',
+          body: `
+      <p>Go to <strong>DNS → Records</strong> and create an A record for the chat subdomain:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Type</th><th>Name</th><th>Content</th><th>Proxy</th></tr></thead>
+          <tbody>
+            <tr><td>A</td><td>${esc(getSubdomain())}</td><td>${esc(getIP())}</td><td><span class="val">Proxied</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>This creates: <code>${esc(getFQDN())}</code></p>
+      <div class="callout info">The "Name" field is just the subdomain prefix (<code>${esc(getSubdomain())}</code>), not the full URL. Cloudflare appends the domain automatically.</div>
+    `
+        }),
+
+        // Step 13: Clone Repo & Deploy
+        () => ({
+          title: 'Clone Repo & Deploy',
+          where: 'Droplet (SSH)',
+          body: `
+      <h3>Clone the Repo</h3>
+      <p>Clone the Pixel Assist repo and checkout the client branch:</p>
+      ${codeBlock(
+        `cd /srv
+git clone git@github.com:${getGH()}/pixel-assist.git
+cd pixel-assist
+git checkout client-${getSubdomain()}`,
+        'bash',
+        `<p>Clones the repo to <code>/srv/pixel-assist/</code> and switches to the client branch containing the generated config files.</p>`
+      )}
+      <h3>Create Certs Directory</h3>
+      <p>The <code>caddy/certs/</code> directory is git-ignored. Create it before copying certificates:</p>
+      ${codeBlock('mkdir -p /srv/pixel-assist/caddy/certs', 'bash')}
+      <div class="callout info">If you haven't copied the origin certificates yet, go back to the previous step.</div>
+      <h3>Start All Services</h3>
+      ${codeBlock(
+        `cd /srv/pixel-assist
+docker compose up -d --build`,
+        'bash',
+        `<p><code>docker compose up -d --build</code> from the project root:</p><p>1. Creates the <code>caddy-net</code> Docker network automatically</p><p>2. Builds the PII proxy image from <code>middleware/pii-proxy/Dockerfile</code></p><p>3. Pulls the Caddy and AnythingLLM images</p><p>4. Starts all three services in detached mode</p><p>The root <code>docker-compose.yml</code> uses <code>include</code> to orchestrate all sub-folder compose files.</p>`
+      )}
+      <div class="callout warning"><strong>First build will be slow.</strong> The PII proxy downloads the spaCy <code>en_core_web_lg</code> language model (~560 MB). Subsequent builds use the cached Docker layer.</div>
+      <h3>Verify</h3>
+      ${codeBlock(
+        `docker ps
+docker logs caddy
+docker logs pii-proxy
+docker logs anythingllm`,
+        'bash',
+        `<p>Confirm all three containers are running. Check logs for any startup errors.</p>`
+      )}
+    `
+        }),
+
+        // Step 14: Configure AnythingLLM
+        () => ({
+          title: 'Configure AnythingLLM',
+          where: 'Browser + Client Website',
+          body: `
+      <p>Open <code>https://${esc(getFQDN())}</code> in your browser. The AnythingLLM setup wizard will appear on first run.</p>
+      <ol>
+        <li>Complete the initial setup (admin account, LLM provider, embedding model, vector database)</li>
+        <li>Create a <strong>Workspace</strong> for this client</li>
+        <li>Upload any relevant documents to the workspace (for RAG context)</li>
+        <li>Go to the workspace <strong>Settings → Chat Settings</strong> to configure the chat behavior</li>
+        <li>Go to <strong>Settings → Embed Chat</strong> (or the embed icon) to create an embed config</li>
+        <li>AnythingLLM will generate a <code>&lt;script&gt;</code> tag like this:</li>
+      </ol>
+      ${codeBlock(esc(`<script\n  data-embed-id="your-unique-embed-id"\n  data-base-api-url="https://${getFQDN()}/api/embed"\n  src="https://${getFQDN()}/embed/anythingllm-chat-widget.min.js"\n><\/script>`), 'html')}
+      <p>Add this script tag to the client's external website, before the closing <code>&lt;/body&gt;</code> tag.</p>
+      <div class="callout info">Each workspace can have multiple embed configs with different settings (greeting, suggested questions, prompt, etc.).</div>
+    `
+        }),
+
+        // Step 15: Enable WebSockets
+        () => ({
+          title: 'Enable WebSockets',
+          where: 'Cloudflare Dashboard',
+          body: `
+      <p>Go to <strong>Network</strong> in the Cloudflare dashboard.</p>
+      <p>Ensure <strong>WebSockets</strong> is toggled <strong>ON</strong> (it's on by default for most plans).</p>
+      <div class="callout info">WebSockets are required for the AnythingLLM chat widget to communicate in real-time.</div>
+    `
+        }),
+
+        // Step 16: Configure Firewall
+        () => ({
+          title: 'Configure Firewall',
+          where: 'DigitalOcean Dashboard',
+          body: `
+      <p>Go to <strong>Networking → Firewalls</strong> and create a firewall. Attach it to your Droplet.</p>
+      <h3>Find Your Public IP</h3>
+      ${codeBlock('curl ifconfig.me', 'bash', `<p>Returns your current public IP address for the SSH firewall rule.</p>`)}
+      <h3>Find Cloudflare IP Ranges</h3>
+      ${codeBlock('curl https://www.cloudflare.com/ips-v4', 'bash', `<p>Cloudflare's IPv4 address ranges in CIDR notation. Add each as a separate source for the HTTP/S rules.</p>`)}
+      ${codeBlock('curl https://www.cloudflare.com/ips-v6', 'bash', `<p>Cloudflare's IPv6 ranges (optional).</p>`)}
+      <h3>Firewall Rules</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Direction</th><th>Protocol</th><th>Port</th><th>Sources</th></tr></thead>
+          <tbody>
+            <tr><td>Inbound</td><td>TCP</td><td>22</td><td>Your IP (SSH)</td></tr>
+            <tr><td>Inbound</td><td>TCP</td><td>80</td><td>Cloudflare IPs</td></tr>
+            <tr><td>Inbound</td><td>TCP</td><td>443</td><td>Cloudflare IPs</td></tr>
+            <tr><td>Outbound</td><td>All</td><td>All</td><td>All</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Restricting ports 80/443 to Cloudflare IPs ensures traffic can only reach your Droplet through Cloudflare, preventing anyone from bypassing DDoS protection by hitting the reserved IP directly.</p>
+      <div class="callout warning"><strong>Dynamic IP:</strong> If your IP changes, you'll be locked out of SSH. Options: allow SSH from all IPs (safe with key auth), update the firewall when IP changes, or use DO Console as a backup.</div>
+      <h3>Verify</h3>
+      <p><strong>1. Confirm SSH works:</strong></p>
+      ${codeBlock(`ssh root@${raw('reservedIP', 'YOUR_RESERVED_IP')}`, 'bash')}
+      <p><strong>2. Confirm HTTPS works through Cloudflare:</strong></p>
+      ${codeBlock(`curl -I https://${getFQDN()}`, 'bash', `<p>Should return HTTP/2 200 (or a redirect). Confirms Cloudflare IPs are allowed.</p>`)}
+      <p><strong>3. Confirm direct access is blocked:</strong></p>
+      ${codeBlock(`curl -I --connect-timeout 5 http://${raw('reservedIP', 'YOUR_RESERVED_IP')}`, 'bash', `<p>Should time out or be refused, confirming the firewall blocks non-Cloudflare traffic.</p>`)}
+    `
+        }),
+
+        // Step 17: Verification
+        () => ({
+          title: 'Verification',
+          where: 'Droplet + Browser',
+          body: `
+      <h3>From the Droplet</h3>
+      ${codeBlock(
+        `# Check all containers are running
+docker ps
+
+# Check containers on caddy-net
+docker network inspect caddy-net --format '{{range .Containers}}{{.Name}} {{end}}'
+
+# PII proxy health check
+docker exec pii-proxy curl -s http://localhost:8000/health | python3 -m json.tool
+
+# Check Caddy logs
+docker logs caddy --tail 20
+
+# Check PII proxy logs
+docker logs pii-proxy --tail 20`,
+        'bash',
+        `<p><code>docker ps</code> lists running containers.</p><p><code>docker network inspect</code> confirms all three containers are on caddy-net.</p><p>The PII proxy health endpoint returns its status and active session count.</p>`
+      )}
+      <h3>From Your Browser</h3>
+      <ol>
+        <li>Visit <code>https://${esc(getFQDN())}</code> — should show the AnythingLLM UI</li>
+        <li>On the client's website, verify the chat widget appears and responds</li>
+        <li>Open DevTools → Network tab → send a chat message → confirm:
+          <ul>
+            <li>The <code>stream-chat</code> request goes to <code>${esc(getFQDN())}</code></li>
+            <li>The response streams back as SSE (EventStream)</li>
+            <li>No CORS errors in the console</li>
+          </ul>
+        </li>
+      </ol>
+      <h3>Test PII Scrubbing</h3>
+      <p>Send a message containing a name or phone number through the chat widget, then check the PII proxy logs:</p>
+      ${codeBlock('docker logs pii-proxy --tail 5', 'bash', `<p>You should see a log line with <code>modified=true</code>, confirming the PII was scrubbed before reaching AnythingLLM.</p>`)}
+      <div class="callout success">If all checks pass, your Pixel Assist instance is fully deployed!</div>
+    `
+        }),
+
+        // Step 18: Updating
+        () => ({
+          title: 'Updating an Instance',
+          where: 'Reference',
+          body: `
+      <h3>Updating Config</h3>
+      <p>If you need to change the config (e.g. different subdomain or volume path):</p>
+      <ol>
+        <li>Run <code>node setup.js</code> locally, update the values, re-generate</li>
+        <li>Commit and push</li>
+        <li>On the Droplet:</li>
+      </ol>
+      ${codeBlock(
+        `cd /srv/pixel-assist
+git pull
+docker compose up -d --build`,
+        'bash',
+        `<p>Pulls the latest config changes and restarts affected containers.</p>`
+      )}
+      <h3>Updating Code</h3>
+      <p>If you update the PII proxy code (e.g. new recognizers), the same flow applies — push changes to the branch, pull on the Droplet, rebuild:</p>
+      ${codeBlock(
+        `cd /srv/pixel-assist
+git pull
+docker compose up -d --build`,
+        'bash',
+        `<p><code>--build</code> forces Docker to rebuild the PII proxy image with the updated source code.</p>`
+      )}
+      <h3>Reloading Caddy</h3>
+      <p>If you edit the Caddyfile directly on the Droplet (instead of through this tool), reload Caddy without downtime:</p>
+      ${codeBlock('docker exec caddy caddy reload --config /etc/caddy/Caddyfile', 'bash', `<p>Hot-reloads the Caddyfile without restarting the container or dropping connections.</p>`)}
+      <h3>Viewing Logs</h3>
+      ${codeBlock(
+        `# Follow all service logs
+docker compose logs -f
+
+# Follow a specific service
+docker compose logs -f pii-proxy`,
+        'bash'
+      )}
+    `
+        }),
+
+        // Step 19: (Optional) Host Client Sites on Droplet
+        () => ({
+          title: '(Optional) Host Client Sites on Droplet',
+          where: 'Droplet (SSH)',
+          body: `
+      <div class="callout info">This step is <strong>optional</strong>. In the standard setup, client websites are hosted externally and only embed the chat widget. Only follow this if you need to host a client's static site on the same Droplet.</div>
+      <h3>Create a Site Container</h3>
+      <p>Create a directory for the site and add a <code>docker-compose.yml</code>:</p>
+      ${codeBlock(
+        `mkdir -p /srv/pixel-assist/sites/client-site
+cd /srv/pixel-assist/sites/client-site`,
+        'bash'
+      )}
+      <p>Example <code>docker-compose.yml</code> for a static site served by nginx:</p>
+      ${codeBlock(
+        esc(`services:
+  client-site:
+    image: nginx:alpine
+    container_name: client-site
+    restart: unless-stopped
+    volumes:
+      - ./html:/usr/share/nginx/html:ro
+    networks:
+      - caddy-net
+
+networks:
+  caddy-net:
+    external: true`),
+        'yaml'
+      )}
+      <h3>Add Caddy Site Block</h3>
+      <p>Add a site block to the Caddyfile for the client's subdomain:</p>
+      ${codeBlock(
+        esc(`client-site.${getDomain()} {
+    tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin-key.pem
+    reverse_proxy client-site:80
+}`),
+        'Caddyfile'
+      )}
+      <h3>Steps</h3>
+      <ol>
+        <li>Add an <strong>A record</strong> in Cloudflare for the new subdomain (proxied, pointing to ${esc(getIP())})</li>
+        <li>Add the site block to the Caddyfile</li>
+        <li>Start the site container: <code>cd /srv/pixel-assist/sites/client-site && docker compose up -d</code></li>
+        <li>Reload Caddy: <code>docker exec caddy caddy reload --config /etc/caddy/Caddyfile</code></li>
+      </ol>
+    `
+        })
+      ]
+
+      // ──────────────────── NAVIGATION ────────────────────
+
+      function render() {
+        const step = steps[state.currentStep]()
+        const container = document.getElementById('step-content')
+        const counter = document.getElementById('step-counter')
+        const title = document.getElementById('header-title')
+        const fill = document.getElementById('progress-fill')
+        const prevBtn = document.getElementById('prev-btn')
+        const nextBtn = document.getElementById('next-btn')
+
+        counter.textContent = `Step ${state.currentStep + 1} of ${TOTAL_STEPS}`
+        title.textContent = step.title
+        fill.style.width = `${((state.currentStep + 1) / TOTAL_STEPS) * 100}%`
+
+        let html = `<h2 class="step-title">${step.title}</h2>`
+        if (step.where) html += `<div class="step-where">${step.where}</div>`
+        html += `<div class="step-body">${step.body}</div>`
+        container.innerHTML = html
+
+        prevBtn.disabled = state.currentStep === 0
+        nextBtn.textContent = state.currentStep === TOTAL_STEPS - 1 ? 'Done' : 'Next'
+
+        renderDots()
+        window.scrollTo(0, 0)
+      }
+
+      function renderDots() {
+        const dotsEl = document.getElementById('step-dots')
+        let html = ''
+        for (let i = 0; i < TOTAL_STEPS; i++) {
+          let cls = 'step-dot'
+          if (i === state.currentStep) cls += ' active'
+          html += `<div class="${cls}" onclick="goToStep(${i})" title="Step ${i + 1}"></div>`
+        }
+        dotsEl.innerHTML = html
+      }
+
+      function navigate(dir) {
+        const next = state.currentStep + dir
+        if (next < 0 || next >= TOTAL_STEPS) return
+        state.currentStep = next
+        saveState()
+        render()
+      }
+
+      function goToStep(i) {
+        state.currentStep = i
+        saveState()
+        render()
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT') return
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          e.preventDefault()
+          navigate(1)
+        }
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          e.preventDefault()
+          navigate(-1)
+        }
+      })
+
+      render()
+    </script>
+  </body>
+</html>

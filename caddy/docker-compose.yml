@@ -9,7 +9,7 @@ services:
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./certs:/etc/caddy/certs:ro
-      - /mnt/volume_syd1_02/caddy:/data
+      - /mnt/volume_syd1_04/caddy:/data
     networks:
       - caddy-net
 

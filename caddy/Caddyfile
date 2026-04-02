@@ -2,7 +2,7 @@
     auto_https off
 }
 
-client-name.pixel-assist.com.au {
+test-client.pixel-assist.com.au {
     tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin-key.pem
 
     header Access-Control-Allow-Origin "*"
