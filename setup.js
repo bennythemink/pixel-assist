@@ -55,7 +55,6 @@ function generateCaddyCompose(volumePath) {
 
 networks:
   caddy-net:
-    external: true
 `
 }
 
@@ -76,7 +75,6 @@ function generateAnythingllmCompose(volumePath) {
 
 networks:
   caddy-net:
-    external: true
 `
 }
 
@@ -98,7 +96,6 @@ function generateMiddlewareCompose() {
 
 networks:
   caddy-net:
-    external: true
 `
 }
 
