@@ -1234,8 +1234,34 @@ docker logs anythingllm`,
         <li>Go to <strong>Settings → Embed Chat</strong> (or the embed icon) to create an embed config</li>
         <li>AnythingLLM will generate a <code>&lt;script&gt;</code> tag like this:</li>
       </ol>
-      ${codeBlock(esc(`<script\n  data-embed-id="your-unique-embed-id"\n  data-base-api-url="https://${getFQDN()}/api/embed"\n  src="https://${getFQDN()}/embed/anythingllm-chat-widget.min.js"\n><\/script>`), 'html')}
-      <p>Add this script tag to the client's external website, before the closing <code>&lt;/body&gt;</code> tag.</p>
+      ${codeBlock(esc(`<script\n  data-embed-id="your-unique-embed-id"\n  data-base-api-url="https://${getFQDN()}/api/embed"\n  src="https://${getFQDN()}/embed/anythingllm-chat-widget.min.js"\n  data-button-color="#hexcolor"\n  data-user-bg-color="#hexcolor"\n  data-assistant-bg-color="#hexcolor"\n  data-no-sponsor="true"\n  data-assistant-name="Pixel Assist"\n  data-greeting="Hello. Have a question? Please do not share any personal information."\n  data-default-messages="Hello. Have a question? Please do not share any personal information."\n  data-send-message-text="Ask a question"\n  data-brand-image-url="https://client.com/logo.png"\n  data-assistant-icon="https://client.com/logo.png"\n  data-sponsor-link="https://www.pixelagency.com.au/pixel-assist"\n  data-sponsor-text="Powered by Pixel Assist"\n  data-position="bottom-right"\n  data-chat-icon="magic"\n  data-window-height="600px"\n  data-window-width="400px"\n  data-text-size="14px"\n><\/script>`), 'html')}
+      <h3>Attribute Reference</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Attribute</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>data-embed-id</td><td>Unique ID from AnythingLLM embed config — do not change</td></tr>
+            <tr><td>data-button-color</td><td>Background colour of the chat launcher button (HEX)</td></tr>
+            <tr><td>data-user-bg-color</td><td>Background colour for user chat bubbles (HEX, e.g. <code>#4f46e5</code>)</td></tr>
+            <tr><td>data-assistant-bg-color</td><td>Background colour for assistant chat bubbles (HEX)</td></tr>
+            <tr><td>data-no-sponsor</td><td>Set to <code>true</code> to hide the AnythingLLM branding</td></tr>
+            <tr><td>data-assistant-name</td><td>Display name shown in the chat widget header</td></tr>
+            <tr><td>data-greeting</td><td>Greeting text shown above the message input when the chat first opens</td></tr>
+            <tr><td>data-default-messages</td><td>Pre-populated suggested messages shown before the user types</td></tr>
+            <tr><td>data-send-message-text</td><td>Placeholder text in the message input field</td></tr>
+            <tr><td>data-brand-image-url</td><td>Absolute URL to the client logo shown in the widget header</td></tr>
+            <tr><td>data-assistant-icon</td><td>Absolute URL to the icon shown on the chat bubble launcher button</td></tr>
+            <tr><td>data-sponsor-link</td><td>URL for the sponsor/branding link (e.g. <code>https://www.pixelagency.com.au/pixel-assist</code>)</td></tr>
+            <tr><td>data-sponsor-text</td><td>Text shown as the sponsor label (e.g. <code>Powered by Pixel Assist</code>)</td></tr>
+            <tr><td>data-position</td><td>Corner position of the launcher button — <code>bottom-right</code> or <code>bottom-left</code></td></tr>
+            <tr><td>data-chat-icon</td><td>Icon style for the launcher button (e.g. <code>magic</code>)</td></tr>
+            <tr><td>data-window-height</td><td>Height of the chat window (px, %, or rem — e.g. <code>600px</code>)</td></tr>
+            <tr><td>data-window-width</td><td>Width of the chat window (px, %, or rem — e.g. <code>400px</code>)</td></tr>
+            <tr><td>data-text-size</td><td>Font size inside the chat window (px — e.g. <code>14px</code>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Add the completed script tag to the client's external website, before the closing <code>&lt;/body&gt;</code> tag.</p>
       <div class="callout info">Each workspace can have multiple embed configs with different settings (greeting, suggested questions, prompt, etc.).</div>
     `
         }),
