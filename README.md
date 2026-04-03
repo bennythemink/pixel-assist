@@ -1,6 +1,6 @@
 # Pixel Assist
 
-White-label AI chat product by Pixel Agency. Each instance runs on its own DigitalOcean Droplet and provides an embeddable chat widget to client websites.
+White-label AI RAG based chat product by Pixel Agency. Each instance runs on its own DigitalOcean Droplet and provides an embeddable chat widget to client websites.
 
 ## Architecture
 
