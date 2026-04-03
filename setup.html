@@ -537,7 +537,7 @@
     <div class="header">
       <div class="header-top">
         <h1 id="header-title">Pixel Assist Setup</h1>
-        <span class="step-counter" id="step-counter">Step 1 of 19</span>
+        <span class="step-counter" id="step-counter">Step 1 of 20</span>
       </div>
       <div class="progress-bar-track">
         <div class="progress-bar-fill" id="progress-fill"></div>
@@ -553,7 +553,7 @@
     </div>
 
     <script>
-      const TOTAL_STEPS = 19
+      const TOTAL_STEPS = 20
 
       const state = {
         currentStep: 0,
@@ -895,7 +895,42 @@ networks:
     `
         }),
 
-        // Step 2: Instance Configuration
+        // Step 2: Create Droplet & Reserved IP
+        () => ({
+          title: 'Create Droplet & Reserved IP',
+          where: 'DigitalOcean Dashboard',
+          body: `
+      <ol>
+        <li>Create a Droplet using the <strong>Docker</strong> image from the DO Marketplace
+          <ul>
+            <li>Choose your preferred region and size (recommend at least <strong>4 GB RAM</strong>)</li>
+            <li>Under <strong>Add Volume</strong>, create a block storage volume — DO will format and mount it automatically (typically at <code>/mnt/&lt;volume-name&gt;</code>)</li>
+          </ul>
+        </li>
+        <li>Go to <strong>Networking → Reserved IPs</strong> and create a reserved IP, assign it to your Droplet</li>
+      </ol>
+      <div class="callout info">Once your Droplet is ready, continue to the next step to SSH in and discover the volume path. You'll enter all instance details in Step 4.</div>
+    `
+        }),
+
+        // Step 3: SSH & Verify Volume
+        () => ({
+          title: 'SSH & Verify Volume',
+          where: 'Your Local Terminal',
+          body: `
+      <p>SSH into the Droplet:</p>
+      ${codeBlock(`ssh root@${raw('reservedIP', 'YOUR_RESERVED_IP')}`, 'bash', `<p><code>ssh</code> establishes a secure shell connection to the remote server as root.</p>`)}
+      <h3>Find Your Volume Mount Path</h3>
+      <p>The volume was attached during Droplet creation. Run this to see mounted filesystems:</p>
+      ${codeBlock('df -h', 'bash', `<p><code>df -h</code> shows disk space usage in human-readable format. Look for your volume — it will be the largest non-root filesystem, mounted at a path like <code>/mnt/volume_syd1_04</code>.</p>`)}
+      <p>Note the volume path — you'll enter it in Step 4.</p>
+      <h3>Verify Docker & Compose Version</h3>
+      ${codeBlock('docker compose version', 'bash', `<p>The root docker-compose.yml uses the <code>include</code> directive, which requires Docker Compose v2.20 or later. The DO Docker marketplace image should have a recent version.</p>`)}
+      <div class="callout warning"><strong>Required:</strong> Docker Compose v2.20+ (for the <code>include</code> directive). If your version is older, update with: <code>apt update && apt install -y docker-compose-plugin</code></div>
+    `
+        }),
+
+        // Step 4: Instance Configuration
         () => ({
           title: 'Instance Configuration',
           where: 'This Tool',
@@ -903,8 +938,8 @@ networks:
       <p>Enter the details for this client instance. These values will be used to generate config files and will appear throughout the remaining steps.</p>
       ${inputField('subdomain', 'Client Subdomain', 'acme-corp', 'The subdomain prefix for this client (e.g. acme-corp → acme-corp.pixel-assist.com.au)')}
       ${inputField('domain', 'Domain', 'pixel-assist.com.au', 'Your base domain')}
-      ${inputField('reservedIP', 'Reserved IP Address', '164.90.xxx.xxx', "Your DigitalOcean reserved IP (enter after creating the Droplet if you don't have it yet)")}
-      ${inputField('volumePath', 'Volume Mount Path', '/mnt/volume_syd1_04', "The DO block storage mount path (enter after creating the Droplet if you don't have it yet)")}
+      ${inputField('reservedIP', 'Reserved IP Address', '164.90.xxx.xxx', 'Your DigitalOcean reserved IP (from Step 2)')}
+      ${inputField('volumePath', 'Volume Mount Path', '/mnt/volume_syd1_04', 'The DO block storage mount path (from Step 3)')}
       ${inputField('githubUsername', 'GitHub Username', 'pixel-agency', 'Your GitHub username or org for clone URLs')}
       <h3>Preview</h3>
       <div class="table-wrap">
@@ -922,7 +957,7 @@ networks:
     `
         }),
 
-        // Step 3: Generate Config Files
+        // Step 5: Generate Config Files
         () => {
           const missing = []
           if (!state.subdomain || !state.subdomain.trim()) missing.push('subdomain')
@@ -935,7 +970,7 @@ networks:
             where: 'This Tool',
             body: `
       <p>This step generates the config files for your instance and writes them directly to the project directory.</p>
-      ${!canGenerate ? `<div class="callout warning"><strong>Missing required fields:</strong> ${missing.join(', ')}. Go back to Step 2 to fill them in.</div>` : ''}
+      ${!canGenerate ? `<div class="callout warning"><strong>Missing required fields:</strong> ${missing.join(', ')}. Go back to Step 4 to fill them in.</div>` : ''}
       <h3>Files to Generate</h3>
       <p>The following files will be ${state.filesGenerated ? 'overwritten' : 'created'}:</p>
       <div class="table-wrap">
@@ -969,42 +1004,6 @@ networks:
     `
           }
         },
-
-        // Step 4: Create Droplet & Reserved IP
-        () => ({
-          title: 'Create Droplet & Reserved IP',
-          where: 'DigitalOcean Dashboard',
-          body: `
-      <ol>
-        <li>Create a Droplet using the <strong>Docker</strong> image from the DO Marketplace
-          <ul>
-            <li>Choose your preferred region and size (recommend at least <strong>4 GB RAM</strong>)</li>
-            <li>Under <strong>Add Volume</strong>, create a block storage volume — DO will format and mount it automatically (typically at <code>/mnt/&lt;volume-name&gt;</code>)</li>
-          </ul>
-        </li>
-        <li>Go to <strong>Networking → Reserved IPs</strong> and create a reserved IP, assign it to your Droplet</li>
-      </ol>
-      <p>If you haven't already, enter your reserved IP and volume path in Step 2.</p>
-      <div class="callout info">After creating the Droplet, you can go back to Step 2 to enter the reserved IP and volume path, then re-generate the config files in Step 3.</div>
-    `
-        }),
-
-        // Step 5: SSH & Verify Volume
-        () => ({
-          title: 'SSH & Verify Volume',
-          where: 'Your Local Terminal',
-          body: `
-      <p>SSH into the Droplet:</p>
-      ${codeBlock(`ssh root@${raw('reservedIP', 'YOUR_RESERVED_IP')}`, 'bash', `<p><code>ssh</code> establishes a secure shell connection to the remote server as root.</p>`)}
-      <h3>Find Your Volume Mount Path</h3>
-      <p>The volume was attached during Droplet creation. Run this to see mounted filesystems:</p>
-      ${codeBlock('df -h', 'bash', `<p><code>df -h</code> shows disk space usage in human-readable format. Look for your volume — it will be the largest non-root filesystem, mounted at a path like <code>/mnt/volume_syd1_04</code>.</p>`)}
-      <p>If the volume path differs from what you entered in Step 2, go back and update it, then re-generate the files in Step 3.</p>
-      <h3>Verify Docker & Compose Version</h3>
-      ${codeBlock('docker compose version', 'bash', `<p>The root docker-compose.yml uses the <code>include</code> directive, which requires Docker Compose v2.20 or later. The DO Docker marketplace image should have a recent version.</p>`)}
-      <div class="callout warning"><strong>Required:</strong> Docker Compose v2.20+ (for the <code>include</code> directive). If your version is older, update with: <code>apt update && apt install -y docker-compose-plugin</code></div>
-    `
-        }),
 
         // Step 6: Create Directory Structure
         () => ({
@@ -1051,7 +1050,7 @@ cat ~/.ssh/id_ed25519.pub`,
           where: 'Cloudflare Dashboard',
           body: `
       <ol>
-        <li>Log into Cloudflare → <strong>Add a Site</strong> → enter <code>${esc(getDomain())}</code></li>
+        <li>Log into Cloudflare → <strong>Add a Domain</strong> → enter <code>${esc(getDomain())}</code></li>
         <li>Choose the <strong>Free</strong> plan</li>
         <li>Cloudflare will scan existing DNS records — review and confirm</li>
         <li>Cloudflare gives you two nameservers (e.g. <code>ada.ns.cloudflare.com</code>, <code>bob.ns.cloudflare.com</code>) — <strong>copy these</strong></li>
@@ -1110,19 +1109,36 @@ cat ~/.ssh/id_ed25519.pub`,
     `
         }),
 
-        // Step 11: Copy Origin Certificates
+        // Step 11: Clone Repo
+        () => ({
+          title: 'Clone Repo',
+          where: 'Droplet (SSH)',
+          body: `
+      <p>Clone the Pixel Assist repo and checkout the client branch. The <code>caddy/certs/</code> directory is already present in the repo (tracked via <code>.gitkeep</code>) — the next step will copy the Cloudflare origin certificates into it.</p>
+      ${codeBlock(
+        `cd /srv
+git clone git@github.com:${getGH()}/pixel-assist.git
+cd pixel-assist
+git checkout client-${getSubdomain()}`,
+        'bash',
+        `<p>Clones the repo to <code>/srv/pixel-assist/</code> and switches to the client branch containing the generated config files.</p><p>The branch name matches the client subdomain by convention (e.g. <code>client-acme-corp</code>).</p>`
+      )}
+      <p>The next step will copy the Cloudflare origin certificates into <code>/srv/pixel-assist/caddy/certs/</code>.</p>
+    `
+        }),
+
+        // Step 12: Copy Origin Certificates
         () => ({
           title: 'Copy Origin Certificates to Droplet',
           where: 'Your Local Terminal',
           body: `
-      <p>From your local machine, copy the certificate files to the Droplet:</p>
+      <p>From your local machine, copy the certificate files into the cloned repo:</p>
       ${codeBlock(
         `scp origin.pem root@${raw('reservedIP', 'YOUR_RESERVED_IP')}:/srv/pixel-assist/caddy/certs/origin.pem
 scp origin-key.pem root@${raw('reservedIP', 'YOUR_RESERVED_IP')}:/srv/pixel-assist/caddy/certs/origin-key.pem`,
         'bash',
-        `<p><code>scp</code> securely copies files over SSH.</p>`
+        `<p><code>scp</code> securely copies files over SSH. Run these from the directory where you saved the certificate files.</p>`
       )}
-      <div class="callout info">The <code>caddy/certs/</code> directory is git-ignored. Certificates must be copied manually to each Droplet.</div>
       <p>SSH into the Droplet and lock down permissions:</p>
       ${codeBlock(
         `ssh root@${raw('reservedIP', 'YOUR_RESERVED_IP')}
@@ -1131,10 +1147,11 @@ chmod 644 /srv/pixel-assist/caddy/certs/origin.pem`,
         'bash',
         `<p><code>chmod 600</code> = owner read/write only (private key must be secret).</p><p><code>chmod 644</code> = owner read/write, others read-only.</p>`
       )}
+      <div class="callout info">Certificates must be copied manually to each Droplet — they are git-ignored and never stored in the repo.</div>
     `
         }),
 
-        // Step 12: Create DNS Record
+        // Step 13: Create DNS Record
         () => ({
           title: 'Create DNS Record',
           where: 'Cloudflare Dashboard',
@@ -1153,26 +1170,12 @@ chmod 644 /srv/pixel-assist/caddy/certs/origin.pem`,
     `
         }),
 
-        // Step 13: Clone Repo & Deploy
+        // Step 14: Start Services
         () => ({
-          title: 'Clone Repo & Deploy',
+          title: 'Start All Services',
           where: 'Droplet (SSH)',
           body: `
-      <h3>Clone the Repo</h3>
-      <p>Clone the Pixel Assist repo and checkout the client branch:</p>
-      ${codeBlock(
-        `cd /srv
-git clone git@github.com:${getGH()}/pixel-assist.git
-cd pixel-assist
-git checkout client-${getSubdomain()}`,
-        'bash',
-        `<p>Clones the repo to <code>/srv/pixel-assist/</code> and switches to the client branch containing the generated config files.</p>`
-      )}
-      <h3>Create Certs Directory</h3>
-      <p>The <code>caddy/certs/</code> directory is git-ignored. Create it before copying certificates:</p>
-      ${codeBlock('mkdir -p /srv/pixel-assist/caddy/certs', 'bash')}
-      <div class="callout info">If you haven't copied the origin certificates yet, go back to the previous step.</div>
-      <h3>Start All Services</h3>
+      <p>From the project root, start all services with a single command:</p>
       ${codeBlock(
         `cd /srv/pixel-assist
 docker compose up -d --build`,

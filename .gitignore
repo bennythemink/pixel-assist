@@ -1,0 +1,8 @@
+# Certs (never commit private keys or origin certs)
+caddy/certs/*.pem
+
+# macOS
+.DS_Store
+
+# Node
+node_modules/
