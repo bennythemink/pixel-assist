@@ -11,6 +11,9 @@ Client website (external)
    Cloudflare (DNS + edge proxy)
         │
         ▼
+   Digital Ocean Droplet (hosting)
+        │
+        ▼
    Caddy (TLS termination + routing + CORS)
         │
         ├──  /api/embed/*/stream-chat  ──▶  PII Proxy (scrubs personal data)  ──▶  AnythingLLM
@@ -136,12 +139,17 @@ This opens a browser-based walkthrough at `http://127.0.0.1:3000` that collects 
 
 The `main` branch is a template. Each client gets its own branch with generated config.
 
-1. Create a client branch: `git checkout -b client-acme`
-2. Run `node setup.js`, fill in the details, click **Generate**
-3. Commit and push the branch
-4. Create a DigitalOcean Droplet with block storage
-5. Create volume directories and set permissions on the Droplet
-6. Clone the repo on the Droplet and checkout the client branch
+1. Create a DigitalOcean Droplet with block storage
+2. Create volume directories and set permissions on the Droplet
+3. On your local machine create a client branch: `git checkout -b client-acme`
+4. Run `node setup.js`, fill in the details, click **Generate**
+5. Commit and push the branch
+6. Clone the repo's client branch on the Droplet
+
+```
+git clone --branch client-acme git@github.com:bennythemink/pixel-assist.git
+```
+
 7. Place Cloudflare origin certificates in `caddy/certs/`
 8. Start all services from the project root:
    ```bash
