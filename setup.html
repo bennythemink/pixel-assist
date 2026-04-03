@@ -967,12 +967,23 @@ networks:
 
           return {
             title: 'Generate Config Files',
-            where: 'This Tool',
+            where: 'Local Terminal + This Tool',
             body: `
-      <p>This step generates the config files for your instance and writes them directly to the project directory.</p>
+      <h3>1. Clone the Repo & Create a Client Branch</h3>
+      <p>If you haven't already, clone the Pixel Assist repo on your local machine and create a branch for this client:</p>
+      ${codeBlock(
+        `git clone git@github.com:${getGH()}/pixel-assist.git
+cd pixel-assist
+git checkout -b client-${getSubdomain()}`,
+        'bash',
+        `<p><code>git checkout -b</code> creates and switches to a new branch in one command.</p><p>By convention the branch name matches the client subdomain — e.g. <code>client-acme-corp</code>. The server will clone this specific branch when deploying.</p>`
+      )}
+      <div class="callout info">Run <code>node setup.js</code> from inside the cloned repo so that generated files are written to the correct location.</div>
+      <h3>2. Generate & Write Config Files</h3>
+      <p>Enter the details for this instance in Step 4, then generate the config files below. They will be written directly into your local repo.</p>
       ${!canGenerate ? `<div class="callout warning"><strong>Missing required fields:</strong> ${missing.join(', ')}. Go back to Step 4 to fill them in.</div>` : ''}
       <h3>Files to Generate</h3>
-      <p>The following files will be ${state.filesGenerated ? 'overwritten' : 'created'}:</p>
+      <p>The following files will be ${state.filesGenerated ? 'overwritten' : 'created'} in the repo:</p>
       <div class="table-wrap">
         <table>
           <thead><tr><th>File</th><th>Purpose</th></tr></thead>
@@ -1000,7 +1011,17 @@ networks:
         ${state.filesGenerated ? 'Re-generate & Overwrite Files' : 'Generate & Write Files'}
       </button>
       <div id="generate-results"></div>
-      ${state.filesGenerated ? '<div class="callout success"><strong>Files have been generated.</strong> Commit your changes and push the branch, then continue with the server setup steps.</div>' : ''}
+      ${
+        state.filesGenerated
+          ? `<div class="callout success"><strong>Files have been generated.</strong> Commit and push the branch:</div>
+      ${codeBlock(
+        `git add -A
+git commit -m "chore: configure for ${getSubdomain()}.${getDomain()}"
+git push -u origin client-${getSubdomain()}`,
+        'bash'
+      )}`
+          : ''
+      }
     `
           }
         },
@@ -1115,6 +1136,13 @@ cat ~/.ssh/id_ed25519.pub`,
           where: 'Droplet (SSH)',
           body: `
       <p>Clone the Pixel Assist repo and checkout the client branch. The <code>caddy/certs/</code> directory is already present in the repo (tracked via <code>.gitkeep</code>) — the next step will copy the Cloudflare origin certificates into it.</p>
+      <h3>Install Git</h3>
+      ${codeBlock(
+        `apt update && apt install -y git`,
+        'bash',
+        `<p>Installs Git via apt. The DO Docker marketplace image does not include Git by default.</p>`
+      )}
+      <h3>Clone & Checkout</h3>
       ${codeBlock(
         `cd /srv
 git clone git@github.com:${getGH()}/pixel-assist.git
